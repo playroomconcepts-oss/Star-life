@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>星途人生</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+/* Layout: one narrow column like a setlist; sticky HUD on top, a feed of ticket-stub cards below. */
+:root{
+  --bg:#E8E7EE; --paper:#F8F7FB; --ink:#1A1830; --muted:#5D5977; --line:#CFCCDC;
+  --accent:#C8195A; --accent-soft:#F6DCE7; --gold:#B88400; --gold-soft:#FBEFC8;
+  --good:#1D7F53; --bad:#B8322A; --warn:#D9690B; --crisis:#1F1B33; --crisis-ink:#F1EEFA;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --num:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#100F1B; --paper:#1A1929; --ink:#ECEAF6; --muted:#A39FC0; --line:#33304A;
+  --accent:#FF4F8E; --accent-soft:#3A1A2B; --gold:#FFC53D; --gold-soft:#3A3014;
+  --good:#4CC48A; --bad:#FF6B5E; --warn:#FF9F43; --crisis:#2B1730; --crisis-ink:#F6EAF2; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#100F1B; --paper:#1A1929; --ink:#ECEAF6; --muted:#A39FC0; --line:#33304A;
+  --accent:#FF4F8E; --accent-soft:#3A1A2B; --gold:#FFC53D; --gold-soft:#3A3014;
+  --good:#4CC48A; --bad:#FF6B5E; --warn:#FF9F43; --crisis:#2B1730; --crisis-ink:#F6EAF2; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:16px;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 80px}
+
+/* title */
+.hero{padding-block:48px 24px;display:grid;gap:18px}
+.hero .eyebrow{font-family:var(--num);font-weight:700;letter-spacing:.18em;font-size:15px;color:var(--accent)}
+.hero h1{font-family:var(--display);font-weight:900;font-size:clamp(64px,19vw,128px);line-height:.95;margin:0;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero p{margin:0;max-width:34em;color:var(--muted)}
+.ladder{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ladder span{font-size:12px;border:1px solid var(--line);padding:2px 9px;border-radius:99px;color:var(--muted)}
+.ladder span:last-child{border-color:var(--gold);color:var(--gold);font-weight:700}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--ink);color:var(--paper);border:0;border-radius:6px;padding:14px 26px;font-weight:700;font-size:17px;cursor:pointer;letter-spacing:.04em}
+.btn:hover{background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent);background:transparent}
+.note{font-size:13px;color:var(--muted)}
+
+/* setup */
+.setup{display:grid;gap:28px;padding-top:12px}
+.setup h2{font-family:var(--display);font-size:30px;margin:0;font-weight:900}
+.field{display:grid;gap:10px}
+.field>label,.field>.lbl{font-weight:700;font-size:14px;letter-spacing:.06em;color:var(--muted)}
+.field input{font:inherit;font-size:20px;padding:10px 14px;border-radius:6px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);width:100%}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opt{background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:12px 14px;text-align:left;cursor:pointer;display:grid;gap:4px;min-width:0}
+.opt b{font-size:17px}
+.opt small{font-size:12.5px;line-height:1.5;color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.opt:hover{border-color:var(--accent)}
+
+/* HUD */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px 10px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.hud-top{display:flex;align-items:flex-end;gap:12px;justify-content:space-between}
+.who{min-width:0}
+.who .nm{font-family:var(--display);font-weight:900;font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who .meta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agebox{text-align:right;flex:none}
+.agebox .age{font-family:var(--num);font-weight:900;font-size:44px;line-height:.85}
+.agebox .age small{font-family:var(--body);font-size:13px;font-weight:500;margin-left:2px}
+.tier{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:99px;background:var(--ink);color:var(--paper);margin-top:4px}
+.nums{display:flex;gap:16px;margin-top:8px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.nums div{font-size:12px;color:var(--muted)}
+.nums b{font-family:var(--num);font-size:22px;color:var(--ink);font-weight:700;margin-left:4px;letter-spacing:.02em}
+.meters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px 12px;margin-top:8px}
+.nums small{font-size:11px;color:var(--muted);margin-left:1px}
+.confirm[hidden],[hidden]{display:none!important}
+.nums .attlow b{color:var(--warn)}
+.rv{display:grid;gap:3px;margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--bg);font-size:14px}
+.rv b{display:inline-block;min-width:4.5em;margin-right:6px;color:var(--muted);font-weight:700}
+.card.crisis .rv{background:rgba(255,255,255,.06)}
+.hint{display:block;margin-top:8px;font-size:14px;color:var(--muted);border-left:2px solid var(--line);padding-left:8px}
+.m{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:0 6px;font-size:11.5px}
+.m .ml{color:var(--muted)}
+.m .mv{font-family:var(--mono);font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+.m .bar{grid-column:1/-1;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.m .bar i{display:block;height:100%;background:var(--ink);transition:width .4s}
+.m.low .bar i{background:var(--warn)}
+.m.low .mv,.m.low .ml{color:var(--warn);font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11.5px;padding:1px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.tag.warn{border-color:var(--bad);color:var(--bad)}
+.sex{font-family:var(--body);font-size:12px;font-weight:700;color:var(--accent);vertical-align:middle;margin-left:4px}
+.restart{margin-top:4px;background:transparent;border:1px solid var(--line);color:var(--muted);font-size:11.5px;border-radius:4px;padding:1px 8px;cursor:pointer}
+.restart:hover{border-color:var(--accent);color:var(--accent)}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--accent-soft);font-size:13.5px}
+.cbtn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:3px 12px;font-size:13px;cursor:pointer}
+.cbtn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.opts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+b.ok{color:var(--good)} b.ng{color:var(--bad)}
+.card.crisis b.ok{color:#6FE0A6} .card.crisis b.ng{color:#FF8A80}
+
+/* feed */
+.feed{display:grid;gap:14px;margin-top:16px}
+.year{display:grid;gap:12px}
+.yearmark{display:flex;align-items:baseline;gap:10px;margin-top:10px}
+.yearmark .n{font-family:var(--num);font-weight:900;font-size:34px;line-height:1;color:var(--accent)}
+.yearmark .t{font-size:13px;color:var(--muted)}
+.yearmark::after{content:"";flex:1;border-top:1px dashed var(--line);transform:translateY(-6px)}
+.year.past .body{display:none}
+.year.past .card{padding-block:10px}
+.year.past .result p{display:none}
+.year.past .yearmark .n{color:var(--muted)}
+.card{background:var(--paper);border-radius:10px;padding:16px 18px 16px 22px;position:relative;border:1px solid var(--line);animation:in .35s ease-out}
+.card::before{content:"";position:absolute;left:8px;top:14px;bottom:14px;border-left:2px dotted var(--line)}
+@keyframes in{from{transform:translateY(8px);opacity:.4}to{transform:none;opacity:1}}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent)}
+.body{margin:4px 0 0;font-size:16.5px}
+.choices{display:grid;gap:8px;margin-top:12px}
+.choices.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.choice{display:grid;gap:2px;text-align:left;background:transparent;border:1.5px solid var(--ink);border-radius:7px;padding:9px 12px;cursor:pointer;min-width:0}
+.choice .ct{font-weight:700;font-size:15.5px;line-height:1.35}
+.choice .cs{font-size:12px;color:var(--muted);line-height:1.4}
+.choice:hover{background:var(--ink);color:var(--paper)}
+.choice:hover .cs{color:var(--paper);opacity:.75}
+.choice.hidden{border-color:var(--gold);border-style:dashed}
+.choice.hidden .ct{color:var(--gold)}
+.choice.hidden:hover{background:var(--gold);color:var(--paper)}
+.choice.hidden:hover .ct{color:var(--paper)}
+.result{margin-top:10px;display:grid;gap:6px}
+.picked{font-weight:700;font-size:14px;color:var(--muted)}
+.result p{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:1px 7px;border-radius:4px;background:var(--bg);font-variant-numeric:tabular-nums}
+.chip.up{color:var(--good)}
+.chip.dn{color:var(--bad)}
+.ms{background:var(--gold-soft);color:var(--ink);border-left:3px solid var(--gold);padding:5px 10px;font-size:14px;font-weight:500;border-radius:0 6px 6px 0}
+.ms::before{content:"★ ";color:var(--gold)}
+.card.crisis{background:var(--crisis);color:var(--crisis-ink);border-color:var(--crisis)}
+.card.crisis .kicker{color:#FF7FAA}
+.card.crisis .choice{border-color:var(--crisis-ink)}
+.card.crisis .choice .cs,.card.crisis .picked{color:var(--crisis-ink);opacity:.75}
+.card.crisis .choice:hover{background:var(--crisis-ink);color:var(--crisis)}
+.card.crisis .choice:hover .cs{color:var(--crisis)}
+.card.crisis .chip{background:rgba(255,255,255,.08)}
+.card.crisis .chip.up{color:#6FE0A6}
+.card.crisis .chip.dn{color:#FF8A80}
+.card.dark-temptation .kicker{color:var(--bad)}
+.quiet,.yearend{font-size:13.5px;color:var(--muted);margin:0;padding-left:22px}
+.yearend .ms{margin-top:6px;color:var(--ink)}
+
+/* end */
+.endcard{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:16px}
+.endhead{background:var(--ink);color:var(--paper);padding:22px 22px 18px;display:grid;gap:6px}
+.endhead .eyebrow{font-family:var(--num);letter-spacing:.2em;font-size:14px;color:var(--gold)}
+.endhead h2{font-family:var(--display);font-weight:900;font-size:clamp(38px,11vw,60px);margin:0;line-height:1.05}
+.endhead .sub{opacity:.85;font-size:15px}
+.endbody{padding:18px 22px 22px;display:grid;gap:18px}
+.epi{font-family:var(--display);font-size:20px;font-weight:700;border-left:3px solid var(--accent);padding-left:12px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.stats div{min-width:0}
+.stats dt{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.stats dd{margin:0;font-family:var(--num);font-weight:700;font-size:26px;line-height:1.15;font-variant-numeric:tabular-nums}
+.stats dd.txt{font-family:var(--body);font-size:15px;font-weight:700;line-height:1.4}
+.sect h3{font-size:13px;letter-spacing:.12em;color:var(--muted);margin:0 0 8px;font-weight:700}
+.achs{display:flex;flex-wrap:wrap;gap:6px}
+.ach{background:var(--gold-soft);border:1px solid var(--gold);color:var(--ink);font-weight:700;font-size:13px;padding:3px 10px;border-radius:99px}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:14px}
+.tl li{display:grid;grid-template-columns:44px 1fr;gap:8px}
+.tl li span{font-family:var(--num);font-weight:700;color:var(--accent);font-size:16px}
+.help{font-size:13.5px;background:var(--bg);padding:10px 12px;border-radius:6px}
+.endbtns{display:flex;flex-wrap:wrap;gap:10px}
+.choice{min-height:44px}
+@media (max-width:560px){
+  body{font-size:15px;line-height:1.65}
+  .wrap{padding-block:6px 56px}
+  .hero{padding-block:28px 16px}
+  .hud{padding-block:8px 8px}
+  .who .nm{font-size:19px}
+  .who .meta{font-size:11.5px}
+  .agebox .age{font-size:34px}
+  .restart{font-size:11px;padding:0 6px}
+  .nums{gap:4px 14px;margin-top:6px}
+  .nums b{font-size:19px}
+  .meters{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 7px;margin-top:6px}
+  .m{font-size:10.5px;gap:0 2px}
+  .m .mv{font-size:10px}
+  .tags{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:6px}
+  .tags::-webkit-scrollbar{display:none}
+  .tag{flex:none;font-size:11px}
+  .feed{gap:10px;margin-top:10px}
+  .year{gap:10px}
+  .yearmark .n{font-size:28px}
+  .card{padding:12px 13px 13px 18px;border-radius:9px}
+  .card::before{left:7px;top:12px;bottom:12px}
+  .body{font-size:15.5px}
+  .choices{gap:6px;margin-top:10px}
+  .choices.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .choices.grid .choice{padding:8px 9px}
+  .choices.grid .ct{font-size:14.5px}
+  .choices.grid .cs{font-size:11px}
+  .opts,.opts.three{grid-template-columns:minmax(0,1fr)}
+  .rv{font-size:13.5px;padding:7px 9px}
+  .rv b{min-width:3.6em}
+  .hint{font-size:13.5px}
+  .quiet,.yearend{padding-left:4px;font-size:13px}
+  .endhead{padding:18px 16px 14px}
+  .endbody{padding:14px 16px 18px}
+  .stats dd{font-size:22px}
+}
+@media (max-width:360px){
+  .choices.grid{grid-template-columns:minmax(0,1fr)}
+  .meters{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.m .bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ utilities ============ */
+const rnd=Math.random, R=(a,b)=>a+rnd()*(b-a), RI=(a,b)=>Math.floor(R(a,b+1));
+const pick=a=>a[Math.floor(rnd()*a.length)], chance=p=>rnd()<p, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function fmt(n){n=Math.round(n);const sg=n<0?'-':'';n=Math.abs(n);
+  if(n>=1e8)return sg+(n/1e8).toFixed(2).replace(/\.?0+$/,'')+'億';
+  if(n>=1e4)return sg+(n/1e4).toFixed(n>=1e6?0:1).replace(/\.0$/,'')+'萬';
+  return sg+n.toLocaleString('en');}
+const cash=n=>(n<0?'-':'')+'US$'+fmt(Math.abs(n));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const OK=t=>`<b class="ok">${t}</b> `, NG=t=>`<b class="ng">${t}</b> `;
+
+/* ============ world data ============ */
+const REGIONS={
+  gc:{name:'大中華地區',main:['pop'],cap:[5e6,6e7,2.5e8],scopes:['港台','華語市場','歐美市場'],chart:'華語專輯榜',award:'年度樂壇頒獎典禮',fests:['大型戶外音樂節'],casino:'澳門',
+      desc:'隨機出生於香港或台灣。粵語流行曲與台灣華語樂壇，頒獎禮、商演、狗仔隊，還有一個不能說出名字的龐大市場。'},
+  jk:{name:'日韓地區',main:['pop','rap'],cap:[8e6,6e7,2.5e8],scopes:['日韓','亞洲','歐美市場'],chart:'日韓綜合專輯榜',award:'年末歌謠大賞',fests:['仁川搖滾音樂節','富士山麓音樂節'],casino:'濟州島',
+      desc:'隨機出生於日本或韓國。練習生制度、偶像組合與年末歌合戰。韓國男生還要面對兵役。'},
+  west:{name:'歐美地區',main:['pop','rap','rock','country'],cap:[1.5e7,8e7,3e8],scopes:['本國','歐美市場','全球'],chart:'百大專輯榜',award:'金唱盤大獎',fests:['石楠山音樂節','沙漠谷音樂節'],casino:'拉斯維加斯',
+      desc:'隨機出生於歐洲或美國。全球最大的音樂市場，說唱、搖滾與鄉村音樂各有天下，小報、官司和頒獎禮都在等你。'}
+};
+const GENRES={
+  pop:{name:'流行曲',desc:'形象、舞台與旋律。最容易紅，也最容易被取代。'},
+  rap:{name:'說唱',desc:'街頭出身、歌詞為王。兄弟可以撐你，也可以毀掉你。'},
+  rock:{name:'搖滾樂隊',desc:'四個人的夢想。派對與誘惑特別多，還要平衡隊友之間的感情。'},
+  indie:{name:'獨立音樂',desc:'自己寫、自己唱、自己發行。賺錢最難，作品最有深度。'},
+  country:{name:'鄉村音樂',desc:'結他、公路與故鄉。在歐美是主流，在亞洲是異類。'}
+};
+const FAMILIES={
+  middle:{name:'小康之家',desc:'父母都是上班族，家裡不算富有，但供得起你學琴。他們最大的願望，是你考上大學、找份穩定工作。',
+    init(){S.money=3000;S.s.rel=70;}},
+  poor:{name:'基層家庭',desc:'一家五口擠在一個狹小的單位裡。你的第一支結他，是從垃圾站撿回來的。',
+    init(){S.money=200;S.s.rel=60;S.s.happy-=5;}},
+  stardad:{name:'星二代',desc:'你的父親是紅極一時的樂壇巨星。你一出生就被鏡頭包圍，但所有人都會拿你和他比較。',
+    init(){S.money=30000;S.fans=20000;S.s.happy-=5;S.s.rel=72;S.att=20;}},
+  rich:{name:'富二代',desc:'家族經營地產生意。錢從來不是問題，問題是家人覺得音樂只是玩意。',
+    init(){S.money=300000;S.s.rel=55;}},
+  vampire:{name:'吸血鬼父母',desc:'父母對你很好，至少在你還沒有開始賺錢之前。',
+    init(){S.money=500;S.s.rel=35;S.s.happy-=5;}},
+  control:{name:'控制型父母',desc:'父親年輕時想當歌手但失敗了。他把所有未完成的夢想壓在你身上，從你懂事開始就逼你每天練習。',
+    init(){S.money=2000;S.s.talent+=15;S.s.happy-=15;S.s.rel=45;}},
+  music:{name:'音樂世家',desc:'父親是樂團指揮，母親是鋼琴家。你在音樂廳的後台長大，聽古典樂比聽兒歌還多。',
+    init(){S.money=8000;S.s.talent+=10;S.s.crea+=10;S.s.rel=60;}},
+  single:{name:'單親家庭',desc:'母親獨力把你養大。她白天在餐廳工作，晚上還要做兼職。她總說：「你喜歡唱歌，就去唱吧。」',
+    init(){S.money=500;S.s.rel=80;}},
+  child:{name:'童星出身',desc:'你六歲拍了第一個廣告，八歲主演兒童劇，全城都認得你這張臉。可是從來沒有人問過你想不想。',
+    init(){S.money=40000;S.fans=80000;S.s.happy-=15;S.oldImage=100;S.att=30;}}
+};
+const MGR={
+  major:{name:'大型唱片公司',share:.55,mult:1.35,desc:'宣傳資源龐大，但會干預你的形象與曲風'},
+  indie:{name:'獨立經理人',share:.8,mult:1.0,desc:'尊重你的創作，資源有限；每年靈感略升'},
+  shark:{name:'唯利是圖的經理人',share:.65,mult:1.15,desc:'通告接到手軟，賺錢快，但你會越來越不開心'},
+  self:{name:'自己管理',share:1,mult:.75,desc:'收入全歸自己，但事事親力親為'},
+  parent:{name:'父母擔任經理人',share:.7,mult:.95,desc:'由家人打理一切；關係好是靠山，關係差是災難'},
+  trainee:{name:'練習生合約',share:.3,mult:1.5,desc:'封閉訓練數年，唱功大升；合約苛刻，能否出道由公司決定'},
+  label:{name:'個人唱片公司',share:1,mult:1.15,desc:'你自己就是老闆'}
+};
+const HOMES={hk:{n:'香港',r:'gc'},tw:{n:'台灣',r:'gc'},jp:{n:'日本',r:'jk'},kr:{n:'韓國',r:'jk'},eu:{n:'歐洲',r:'west'},us:{n:'美國',r:'west'}};
+const MARKETS={hk:{n:'香港',size:3e6,lang:'粵語'},tw:{n:'台灣',size:4e6,lang:'國語'},cn:{n:'華語市場',size:4e7,lang:'國語'},jp:{n:'日本',size:1.5e7,lang:'日語'},kr:{n:'韓國',size:6e6,lang:'韓語'},
+  jkm:{n:'日韓市場',size:2e7,lang:'日語和韓語'},us:{n:'美國',size:3.5e7,lang:'英語'},eu:{n:'歐洲',size:2.5e7,lang:'英語'},westm:{n:'歐美市場',size:6e7,lang:'英語'},asia:{n:'亞洲市場',size:3e7,lang:'亞洲語言'}};
+const ROUTES={hk:{tw:.6,cn:.5,jkm:.35,westm:.12},tw:{hk:.55,cn:.55,jkm:.35,westm:.12},jp:{kr:.12,westm:.3,cn:.3},kr:{jp:.5,westm:.45,cn:.4},eu:{us:.5},us:{eu:.55}};
+function langNeed(t){const own=MARKETS[S.home].lang,tl=MARKETS[t].lang;if(tl===own)return null;if(S.home==='tw'&&t==='cn')return null;return tl;}
+function targets(){return Object.keys(ROUTES[S.home]).filter(t=>!S.markets.includes(t)&&!(t==='cn'&&S.chinaLocked)&&!(S.mTried[t]!=null&&S.age-S.mTried[t]<4));}
+const MGR_EXP={major:1.25,indie:1,shark:1.1,self:.85,parent:.9,trainee:1.15,label:1.05};
+const TIERS=[[0,'素人'],[1e3,'網絡新人'],[5e4,'新晉歌手'],[5e5,'二線歌手'],[3e6,'一線歌手'],[1.5e7,'天王'],[6e7,'傳奇巨星']];
+const COST=[2000,3000,8000,30000,100000,300000,800000];
+const LABEL={health:'健康',happy:'快樂',talent:'唱功',crea:'靈感',rel:'人際關係',att:'關注度',fans:'粉絲',money:'金錢',addiction:'成癮'};
+const STATK=['health','happy','talent','crea','rel'];
+const NAMES={gc:['阿峰','阿傑','小麥','阿駿','阿琛','小雯','阿朗','阿晴','大飛'],jk:['敏俊','智勳','瑞妍','泰民','健太','翔平','美咲','在賢','蓮'],
+  west:['Marcus','Tyler','Jade','Liam','Callum','Freya','Ollie','Niamh','Cody','Dante']};
+const BRO={gc:['阿肥','大隻佬','阿Ray'],jk:['東旭','大成','龍二'],west:['Big D','Lil Moe','Trey','Deano']};
+const ROOKIES={gc:['林小曦','Kayla Chan','陳澄','MOMO'],jk:['SEVENTH','Haru','유나 Yuna','星野凜'],west:['Lily Rae','Kid Nova','Mason Gray','JUNO']};
+const LOVERS=['嘉欣','子晴','俊希','曉彤','浩然','詠琪','Sam','Alex','Jo','雅文','翔太','Mia'];
+const JOBS=['模特兒','攝影師','演員','唱片監製','舞蹈員','大學講師','廚師','建築師'];
+const AW=['浮光','迷城','回聲','逆流','星塵','餘溫','微光','長夜','邊境','潮汐','磁場','引力','碎片','輪迴','盛夏','荒原','霓虹','初雪','白晝','迷霧','落日','燈塔','黑盒','花火','月蝕','原點','漩渦','光年','異鄉','暗湧','航線','靜電','雨林','底片','月台','時差','空城','深海','野火','回程'];
+const APRE=['關於','致','在','再見','我們的','最後的','第一場','無聲的','不完美的','給你的','失眠的','偽裝的'];
+const ASUF=['計劃','研究所','進行式','狂想曲','備忘錄','日記','宣言','說明書','實驗室','俱樂部','三部曲','之歌'];
+const AEN=['NEON','ECHO','HALO','BLUE','MONO','PARADOX','AFTERGLOW','STATIC','GRAVITY','REWIND','SATELLITE','UNDERTOW','VELVET','NORTH'];
+const ANUM=['No.5','Vol.2','1987','B面','Side A','第十三號','三十','零','404','第七日'];
+const GROUPS=['NOVA','LUMEN','ORBIT','8EIGHT','VELVET','ZENITH'];
+const FADE=['你坐飛機時，空中服務員看了你的護照，沒有任何反應。已經沒有人認得你了。',
+  '你打給相熟的製作人，電話那頭沉默了幾秒：「請問你是哪位？」',
+  '比你年輕的人獲頒終身成就獎。那一晚，你抱著當年的獎座痛哭到天亮。',
+  '你在卡拉OK聽見有人點唱你的成名曲。唱的人不知道原唱是誰。',
+  '你在網上搜尋自己的名字，第一頁的結果是另一個同名的人。'];
+const FADE_PLASTIC='朋友邀請你出席一個活動。紅地毯上，沒有一個記者認得出你。';
+
+/* ============ state ============ */
+let S=null, DIFF=null, CURMS=null, yearEl=null, yearSnap=null;
+function newState(name,gender,region){
+  const fam=pick(['middle','middle','poor','poor','stardad','rich','vampire','control','music','single','single','child']);
+  const genre=pick(['pop','pop','rap','rock','indie','country']);
+  S={name,gender,region,genre,family:fam,age:11,
+    s:{health:85,happy:70,talent:RI(20,35),crea:RI(20,35),rel:60},att:0,lowH:0,coDebt:0,
+    fans:0,money:0,addiction:0,sediment:0,drugUses:0,inspired:0,rebirth:0,
+    signed:false,debuted:false,manager:null,markets:[],mTried:{},trainee:0,jail:0,lastRel:null,
+    oldImage:0,chinaLocked:false,lateBloom:false,everViral:false,love:null,married:false,
+    sink:0,crises:0,crisisList:[],releases:[],totalSales:0,peakFans:0,peakTier:0,awards:0,
+    band:null,bro:null,flags:{},seen:{},ms:{},milestones:[],ach:[],worst:null,q:[],phase:'',over:null,log:[]};
+  S.home=pick(Object.keys(HOMES).filter(h=>HOMES[h].r===region));S.markets=[S.home];
+  FAMILIES[fam].init();
+  STATK.forEach(k=>S.s[k]=clamp(S.s[k],0,100));
+  if(genre==='rock'){const ns=[...NAMES[region]].sort(()=>rnd()-.5).slice(0,3);S.band={active:true,m:ns.map((n,i)=>({n,aff:60,r:['結他手','鼓手','貝斯手'][i]}))};}
+  if(genre==='rap')S.bro={n:pick(BRO[region]),t:60};
+}
+const he=()=>S.gender==='f'?'她':'他';
+const tierIdx=(f=S.fans)=>{let i=0;TIERS.forEach((t,j)=>{if(f>=t[0])i=j});return i;};
+const tierName=i=>i===5?(S.gender==='f'?'天后':'天王'):TIERS[i][1];
+const rf=()=>REGIONS[S.region];
+const ageCap=()=>S.gender==='f'?(S.region==='west'?35:32):(S.region==='west'?45:42);
+function ageF(){const a=ageCap();return S.age<=a?1:S.age<=a+3?.4:.12;}
+function capFor(){return S.markets.filter(m=>!(m==='cn'&&S.chinaLocked)).reduce((a,m)=>a+MARKETS[m].size,0);}
+function capF(){return Math.pow(clamp(1-S.fans/capFor(),0,1),1.6)*(1-.15*Math.min(S.sink,4));}
+
+/* ============ stat changes ============ */
+function get(k){return STATK.includes(k)?S.s[k]:S[k];}
+function setv(k,v){
+  if(STATK.includes(k))S.s[k]=clamp(Math.round(v),0,100);
+  else if(k==='addiction'||k==='sediment'||k==='att')S[k]=clamp(Math.round(v),0,100);
+  else if(k==='fans')S.fans=Math.max(0,Math.round(v));
+  else S[k]=Math.round(v);
+}
+function d(k,v){if(v>0&&(k==='talent'||k==='crea')&&S.age>=50)v=v*.5;const b=get(k);setv(k,b+v);const a=get(k);if(DIFF&&a!==b)DIFF[k]=(DIFF[k]||0)+(a-b);}
+function mul(k,f){d(k,get(k)*(f-1));}
+function addFans(n){d('fans',n>0?n*capF():n);}
+function boost(f){d('fans',S.fans*(f-1)*(f>1?capF():1));if(f>1)d('att',Math.min(30,Math.round((f-1)*40)));}
+function ms(id,txt){if(S.ms[id])return;S.ms[id]=1;S.milestones.push({age:S.age,t:txt});if(CURMS)CURMS.push(txt);}
+function ach(n){if(S.ach.includes(n))return;S.ach.push(n);if(CURMS)CURMS.push('解鎖成就：'+n);}
+function scandal(t,size,noHit){if(!S.worst||size>S.worst.size)S.worst={t,size,age:S.age};
+  if(noHit)return;
+  let k=1;if(S.s.rel>=65&&chance((S.s.rel-50)/100)){k=.4;if(CURMS)CURMS.push('人脈關係替你壓下了部分報道');}
+  mul('fans',1-size*k/220);d('happy',-Math.round(size*k/4));d('att',-Math.round(size*k/6));}
+function logk(t){const e=S.log.find(x=>x.t===t||x.base===t);if(e){e.n=(e.n||1)+1;e.t=t+`（共 ${e.n} 次）`;e.base=t;return;}S.log.push({age:S.age,t});}
+const share=()=>MGR[S.manager]?MGR[S.manager].share:1;
+const mgrMult=()=>MGR[S.manager]?MGR[S.manager].mult:.75;
+function albumTitle(){let t,i=0;do{const r=rnd();
+  t=r<.3?pick(AW):r<.45?pick(AW)+'與'+pick(AW):r<.6?pick(APRE)+pick(AW):r<.75?pick(AW)+pick(ASUF):r<.88?pick(AEN):pick(ANUM);i++;}
+  while(S.releases.some(x=>x.title===t)&&i<40);return t;}
+const bandAvg=()=>S.band?S.band.m.reduce((a,m)=>a+m.aff,0)/S.band.m.length:100;
+function baff(i,v){S.band.m[i].aff=clamp(S.band.m[i].aff+v,0,100);}
+function bro(v){if(S.bro)S.bro.t=clamp(S.bro.t+v,0,100);}
+const faded=()=>S.debuted&&S.age>=28&&(S.att<35||(S.peakTier>=2&&S.fans<S.peakFans*.4));
+
+function checkMilestones(){
+  const f=S.fans;
+  if(f>=1e5)ms('f1','粉絲突破10萬');
+  if(f>=1e6)ms('f2','粉絲突破100萬');
+  if(f>=1e7)ms('f3','粉絲突破1000萬');
+  if(f>=5e7)ms('f4','粉絲突破5000萬，人氣直逼 泰絲勒');
+  if(S.totalSales>=1e6)ms('s1','累積專輯銷量突破100萬張');
+  if(S.totalSales>=1e7)ms('s2','累積專輯銷量突破1000萬張');
+  if(S.band&&S.band.active&&f>=2e7)ms('beat','樂隊熱潮席捲全球，媒體形容是 甲殼蟲四子 之後的又一狂熱');
+  if(S.region==='jk'&&S.debuted&&f>=2e7)ms('bts','成為繼 防彈少男團 之後最具影響力的亞洲藝人');
+  if(S.awards>=5)ms('aw5','累積奪得五座年度大獎，得獎紀錄被拿來與 碧安絲 相比');
+  const t=tierIdx();
+  if(t>S.peakTier){S.peakTier=t;if(t>=3)ms('tier'+t,'晉身'+tierName(t));}
+  S.peakFans=Math.max(S.peakFans,S.fans);
+}
+
+/* ============ core mechanics ============ */
+function die(text,cause){S.over={type:'death',text,cause};}
+function healthDeath(){
+  if(S.addiction>0)die(`${S.age}歲那年，你被發現倒在酒店房間，死因是藥物過量。`,'drug');
+  else if(S.age<45)die(`長年透支的身體終於撐不住了。${S.age}歲，你在一次演出後倒下，再也沒有醒來。`,'health');
+  else die(`${S.age}歲，你在睡夢中安詳離世。床頭放著你的第一張專輯。`,'health');
+}
+function finish(type,text){S.over={type,text:text||''};}
+
+function useDrug(){
+  S.drugUses++;
+  const p=[0,.02,.1,.22,.38,.55][Math.min(S.drugUses,5)];
+  if(chance(p)){die(`${S.age}歲那年，你在一次通宵錄音後被發現倒在錄音室，死因是藥物過量。`,'drug');
+    return NG('藥物過量')+'那一晚之後，你再也沒有醒來。';}
+  d('crea',20);d('happy',20);S.inspired=Math.max(S.inspired,S.drugUses===1?22:16);d('addiction',25);d('health',-7);
+  if(S.drugUses===1)logk('第一次接觸毒品');
+  return S.drugUses===1?'世界忽然變得無比清晰，壓在胸口的大石也不見了。你一口氣寫了七首歌，天亮時才發現自己的手在發抖。'
+    :'靈感又回來了，但身體一次比一次虛弱。你知道自己在玩命。';
+}
+function rehab(){
+  const cost=Math.min(Math.max(S.money,0),30000+tierIdx()*20000);d('money',-cost);
+  S.rehabTries=(S.rehabTries||0)+1;
+  const p=.25+S.s.happy/250+S.s.rel/300+S.rehabTries*.1;
+  if(chance(p)){d('addiction',-100);S.flags.rehabbed=true;S.flags.drugHit=false;d('health',15);d('happy',10);
+    S.rebirth=Math.max(S.rebirth,15);d('sediment',20);ach('浪子回頭');logk('成功戒毒');
+    return OK('戒毒成功')+'頭三個月是地獄。但某個早上醒來，你發現自己第一次不再想著那包粉末。';}
+  d('addiction',-15);d('happy',-10);
+  return NG('戒毒失敗')+'你在第三個星期偷偷離開了戒毒中心。癮頭比你想像的更頑強。';
+}
+function lockChina(){
+  if(S.chinaLocked)return '';S.chinaLocked=true;mul('fans',S.region==='gc'?.6:S.region==='jk'?.85:.95);
+  scandal('被某個龐大市場全面封殺',40,true);logk('遭某個十二億人口的市場封殺');return '';
+}
+function startJail(y,why){
+  S.jail=y;S.flags.jailed=true;S.flags.disgraced=true;mul('fans',.75);d('att',-15);d('happy',-15);
+  scandal(why,70,true);logk(why);ach('樂壇壞孩子');
+  let t=' 你被冠上「失德藝人」之名。';
+  if(!S.chinaLocked){lockChina();t+='某個擁有十二億人口的龐大市場隨即全面封殺你的作品。';}
+  if(S.manager==='trainee'||S.trainee>0){S.manager=null;S.trainee=0;S.flags.traineeDone=1;t+='經理人公司即日宣布與你解約。'+settleCoDebt('解約後');}
+  return t;
+}
+
+function crisisCard(label){
+  S.crisisList.push({age:S.age,t:label});
+  return {k:'谷底',cls:'crisis',text:`經歷「${label}」之後，你跌進了人生的谷底。你會怎樣面對？`,choices:[
+    ['把痛苦寫成歌',()=>{d('crea',5);d('happy',-4);return crisisRoll(10);},'把傷口攤開'],
+    ['向家人和朋友傾訴',()=>{d('rel',4);d('happy',5);return crisisRoll(S.s.rel/5);},'人際關係愈好，愈有幫助'],
+    ['用酒精麻醉自己',()=>{d('crea',6);d('health',-8);d('happy',10);S.flags.drink=(S.flags.drink||0)+1;return crisisRoll(-4);},'暫時忘記一切'],
+    ['獨自去旅行沉澱',()=>{d('money',-Math.min(20000,Math.max(0,S.money)));d('happy',8);return crisisRoll(8);},'花一點錢，走遠一點']
+  ]};
+}
+function queueCrisis(label){S.q.unshift(crisisCard(label));}
+function crisisRoll(bonus){
+  const sc=S.s.happy*.45+S.s.rel*.3+bonus-S.crises*5+R(-15,15);
+  S.crises++;
+  if(sc>=45){d('crea',22);S.rebirth=Math.max(S.rebirth,15);d('sediment',12);d('happy',10);
+    return OK('浴火重生')+'你把所有痛苦都化成了旋律。朋友說，你的歌從未如此真實。';}
+  if(sc>=25){d('happy',3);return OK('慢慢復原')+'日子一天天過去。傷口沒有消失，但你學會了和它共處。';}
+  S.sink++;d('happy',-12);mul('fans',.85);d('crea',-5);logk('陷入低潮，一沉不起');
+  return NG('一沉不起')+'你把自己關在房間裡，推掉了所有工作。整整一年，沒有人聽到你的新歌。';
+}
+
+/* ============ releases ============ */
+function releaseCard(indie){
+  const title=albumTitle(), main=rf().main, fit=main.includes(S.genre);
+  return {k:'發行新專輯',text:`你準備發行新專輯《${title}》。目前靈感 ${S.s.crea}、唱功 ${S.s.talent}、快樂 ${S.s.happy}。這次的方向是？`,choices:[
+    ['迎合市場',()=>doRelease(title,'market',indie),fit?'主打大眾口味，銷量較高':`加入${GENRES[main[0]].name}元素，銷量較高`],
+    ['堅持自己的聲音',()=>doRelease(title,'self',indie),'作品更有深度，銷量較低'],
+    ['大膽實驗',()=>doRelease(title,'exp',indie),'可能是神作，也可能是災難']
+  ]};
+}
+function doRelease(title,style,indie){
+  const s=S.s,crea0=s.crea,first=S.releases.length===0;
+  let q=s.crea*.55+s.talent*.35+S.sediment*.13+8+R(-8,8);
+  if(style==='market')q-=2;if(style==='self')q+=5;if(style==='exp')q+=R(-22,22);
+  if(first)q+=R(-20,4);
+  if(s.happy<=20)q-=6;
+  const usedDrug=S.inspired>0,usedReb=S.rebirth>0;
+  q+=S.inspired+S.rebirth;if(S.flags.filmBonus){q+=8;S.flags.filmBonus=0;}
+  q=clamp(Math.round(q),5,100);S.inspired=0;S.rebirth=0;
+  const qg=q<35?-.12:q<50?.08:q<62?.25:q<72?.5:q<80?.85:q<88?1.4:2.2;
+  const mm=style==='market'?1.35:style==='self'?.85:1;
+  const fit=rf().main.includes(S.genre)?1.2:.85, mg=mgrMult();
+  const child=(S.oldImage>40&&S.age>=18)?.8:1;
+  let viral=false,gain;
+  if(qg<0)gain=S.fans*qg;
+  else{const am=.4+S.att/100;gain=(S.fans*qg*mm*fit*mg*child+(5000+s.talent*120)*(q/50)*mg)*am;if(q>=84&&chance(.3)){gain*=2.2;viral=true;}}
+  addFans(gain);
+  let sales=Math.round(S.fans*(.07+q/650)*(style==='market'?1.15:1)*R(.6,1.2));
+  let clash='';
+  if(chance(.12)){sales=Math.round(sales*.4);clash=pick(['發行同一星期，一位天王剛好推出新專輯，把所有宣傳版面都搶光了。','發行當天遇上大新聞，沒有媒體報道你的新專輯。','唱片公司的發行出了問題，一半唱片店沒有上架。']);}
+  if(q<40&&S.fans<20000&&chance(.4))sales=RI(3,9);
+  d('money',sales*1.2*share());d('crea',-12);
+  d('sediment',style==='self'?10:style==='exp'?12:-4);
+  S.totalSales+=sales;S.lastRel=S.age;
+  const rec={title,age:S.age,q,sales,style};S.releases.push(rec);
+  if(q>=78)S.flags.awardCand=Math.max(S.flags.awardCand||0,q);
+  if(q>=80)S.flags.recentHit=S.age;
+  if(usedDrug&&q>=78&&S.addiction>0)S.flags.drugHit=true;
+  const chart=rf().chart, ratio=sales/(capFor()*.02);
+  let pos=ratio>=1?1:ratio>=.5?RI(2,5):ratio>=.25?RI(6,15):ratio>=.1?RI(16,40):ratio>=.03?RI(41,100):0;
+  if(pos===1&&q<70)pos=RI(2,4);
+  let t='';
+  if(!S.debuted){S.debuted=true;S.att=Math.max(S.att,30);S.signed=true;if(!S.manager)S.manager='self';if(S.ageSigned==null)S.ageSigned=S.age;t='你以獨立音樂人身份正式出道！';logk('獨立出道');}
+  const hit=q>=80&&pos&&pos<=15;
+  if(sales<10||(!pos&&q<55)){d('happy',-14);d('att',-6);t+=NG('慘淡收場');}
+  else if(q<45||!pos){d('happy',-10);d('att',-4);t+=NG('市場冷淡');}
+  else if(q<62){d('happy',-5);t+=NG('反應平平');}
+  else if(hit){d('happy',6);d('att',q>=88?14:10);t+=OK(q>=88?'年度經典':'大熱');}
+  else{d('att',4);t+=OK('反應不俗');}
+  if(clash)t+=clash+' ';
+  t+=pos?`專輯《${title}》登上${chart}第 ${pos} 位`:`專輯《${title}》不入${chart}前一百位`;
+  t+=sales<10?`，首周只賣出 ${sales} 張。`:`，賣出 ${fmt(sales)} 張。`;
+  if(S.age>ageCap()&&q>=70&&S.att<40)t+='樂評讚賞有加，但年輕一代的聽眾已經不太留意你了。';
+  if(viral)t+=' 主打歌在網上現象級爆紅！';
+  if(usedDrug)t+=' 錄音那幾晚你一直處於亢奮狀態，事後完全想不起發生過甚麼。';
+  if(usedReb&&q>=78)t+=' 這是你走出谷底後的作品，每一句都像在流血。';
+  t+=reviews(q,sales)+mgrHint(q,crea0);
+  if(pos===1)ms('no1',`首次奪得${chart}冠軍：《${title}》`);
+  if(sales>=1e6)ms('a1',`專輯《${title}》銷量突破100萬張`);
+  if(sales>=5e6)ms('a5',`專輯《${title}》銷量突破500萬張，超越 艾黛爾《廿五》的首周銷量紀錄`);
+  if(S.genre==='rap'&&q>=88)ms('rapq',`說唱專輯《${title}》被譽為經典，與 阿明 的巔峰之作相提並論`);
+  if(S.genre==='rock'&&q>=88)ms('rockq',`《${title}》令你被譽為新一代搖滾之神，媲美 女皇樂隊 的主音`);
+  if(S.genre==='country'&&q>=88)ms('countryq',`《${title}》令你被譽為新一代 陶莉‧芭頓`);
+  if(S.flags.rehabbed&&q>=85)ach('浴火鳳凰');
+  if(S.flags.jailed&&q>=80)ach('鐵窗詩人');
+  if(q>=85)logk(`發表代表作《${title}》`);
+  return t;
+}
+function reviews(q,sales){
+  const ms=clamp(q/10+R(-.6,.6),.5,10).toFixed(1);
+  const media=q>=88?['年度最完整的專輯，編曲、歌詞與演唱無可挑剔。','一張會被寫進樂壇歷史的作品。']
+    :q>=78?['成熟而自信，主打歌的編曲尤其出色。','水準之作，證明了歌手的實力。']
+    :q>=62?['有亮點，但整體略欠驚喜。','中規中矩，有幾首歌值得一聽。']
+    :q>=45?['概念模糊，歌與歌之間缺乏連貫。','聽得出努力，但作品仍然稚嫩。']
+    :['令人失望，看不出這張專輯存在的意義。','編曲粗糙，歌詞空洞。'];
+  const fan=S.fans<5000?['我是你的第一個粉絲！一定要繼續唱下去！','雖然沒甚麼人聽，但我覺得很好聽。']
+    :q>=62?['每一首都是神曲！循環了一整晚。','等了這麼久，終於等到了，哭了。']
+    :['這次風格不同，但我們永遠支持你！','慢慢聽會喜歡的，不准黑我偶像。'];
+  const net=q>=88?['好吧，這次真的無話可說。','我不想承認，但確實好聽。']
+    :q>=75?['還可以，但吹得太誇張了。','主打歌好聽，其他都是填充物。']
+    :q>=55?['聽完就忘。','又是這種套路，聽膩了。']
+    :['這也能出專輯？','錄音室的電費都比這張專輯有價值。','建議退圈。'];
+  return `<span class="rv"><span><b>樂評 ${ms}/10</b>「${pick(media)}」</span><span><b>粉絲</b>「${pick(fan)}」</span><span><b>網民</b>「${pick(net)}」</span></span>`;
+}
+function mgrHint(q,crea0){
+  const who=(!S.manager||S.manager==='self'||S.manager==='label')?'你在筆記簿寫下：':'經理人：';
+  let h;
+  if(q>=85)h='「保持這個狀態，不要改變任何東西。」';
+  else if(crea0<45)h='「靈感好像不夠用了。下次出碟之前，先閉關或者休息一下吧。」';
+  else if(S.s.talent<45)h='「旋律不錯，但唱功拖了後腿。多練練吧。」';
+  else if(S.sediment<30)h='「歌是好歌，但聽起來太浮了，欠一點沉澱。閉關一段時間，或者堅持做自己的聲音，作品會更有深度。」';
+  else if(S.sediment>=60)h='「作品越來越有深度了。就算現在未必大賣，總有一天會有人發現。」';
+  else h='「作品開始有自己的味道了。再沉澱一下，會更好。」';
+  return `<span class="hint">${who}${h}</span>`;
+}
+function retroCard(){
+  const top=[...S.releases].sort((a,b)=>b.q-a.q).slice(0,3);
+  const tt=top.map(r=>'《'+r.title+'》').join('、')||'舊作';
+  return {k:'經典回顧專輯',text:`你的靈感已經大不如前。唱片公司建議推出經典回顧專輯，收錄${tt}等代表作。`,choices:[
+    ['推出精選輯',()=>retro(false),'穩陣，賣的是回憶'],
+    ['重新灌錄經典，加入新編曲',()=>retro(true),'看你現在的唱功']]};
+}
+function retro(re){
+  const top=[...S.releases].sort((a,b)=>b.q-a.q);const base=top.length?top[0].q:50;
+  const q=clamp(Math.round(re?base*.5+S.s.talent*.5+R(-10,10):base-10+R(-5,5)),5,100);
+  const sales=Math.round(S.fans*R(.01,.04)*(re?1.2:1));
+  d('money',sales*1.2*share());d('att',re&&S.s.talent>=60?8:4);boost(1.03);S.lastRel=S.age;S.totalSales+=sales;
+  const title=S.name+(re?' 經典重塑':' 經典精選');S.releases.push({title,age:S.age,q,sales,style:'retro'});
+  if(re&&S.s.talent<50){d('happy',-6);return NG('今非昔比')+`《${title}》賣出 ${fmt(sales)} 張。樂迷說新版本「聽得出歲月的痕跡」，不是讚美。`+reviews(q,sales);}
+  return OK('情懷大賣')+`《${title}》賣出 ${fmt(sales)} 張。一整代人跟著你的歌重溫自己的青春。`+reviews(q,sales);
+}
+
+/* ============ managers & expansion ============ */
+function mgrPickCard(intro,noTrainee){
+  const o=['major','indie','shark','self'];
+  if(['control','vampire','stardad','child'].includes(S.family)&&!S.flags.cut)o.push('parent');
+  if(!noTrainee&&!S.debuted&&S.age<=19&&(S.region==='jk'||S.genre==='pop'||S.genre==='rap')&&!S.flags.traineeDone)o.unshift('trainee');
+  return {k:'經理人',text:intro+' 你會選擇怎樣的經理人？',choices:o.map(m=>[
+    m==='trainee'&&S.region!=='jk'?'遠赴首爾當練習生':MGR[m].name,()=>pickMgr(m),MGR[m].desc])};
+}
+function pickMgr(m){
+  S.manager=m;S.signed=true;S.mgrTrust=55;
+  if(S.ageSigned==null)S.ageSigned=S.age;
+  if(m==='trainee'){S.trainee=RI(2,4);logk('成為練習生');
+    return `你搬進了公司宿舍，成為練習生。預計受訓 ${S.trainee} 年，但沒有人保證你一定能出道。`;}
+  if(S.debuted)return `你和${MGR[m].name}簽了新合約。新的一頁開始了。`+settleCoDebt('離開舊公司');
+  return debut();
+}
+function debut(){
+  S.debuted=true;S.att=Math.max(S.att,35);S.lastRel=S.age;addFans(3000+S.s.talent*100+S.fans*.2);
+  if(S.everViral&&S.ageSigned<16){
+    ach('網絡神童');
+    ms('bieber',S.ageSigned<=12?`${S.ageSigned}歲憑網上影片被發掘，比 賈斯丁‧比柏 當年還要年輕`:'憑網上翻唱影片被唱片公司發掘，走上 賈斯丁‧比柏 的成名之路');
+  }
+  logk('正式出道');
+  if(S.band)return `你和${S.band.m.map(x=>x.n).join('、')}組成的樂隊正式出道！`;
+  return `你以${GENRES[S.genre].name}歌手身份正式出道！`;
+}
+function goExpand(t,cost,diy){
+  d('money',-cost);S.mTried[t]=S.age;const L=langNeed(t);
+  if(L){S.q.unshift(langCard(t,diy));return `你準備進軍${MARKETS[t].n}。第一關，是${L}。`;}
+  return expandRoll(t,1,diy);
+}
+function expandRoll(t,mod,diy){
+  const p=clamp(ROUTES[S.home][t]*(.7+S.s.talent/150)*mod*(diy?.8:1),.03,.9),nm=MARKETS[t].n;
+  if(chance(p)){S.markets.push(t);boost(1.25);addFans(MARKETS[t].size*.02);logk('成功打入'+nm);
+    if(S.home==='jp'&&t==='kr')ach('征服韓國');
+    if(['hk','tw','jp','kr'].includes(S.home)&&t==='westm')ach('衝出亞洲');
+    return OK('成功打入'+nm)+`你在${nm}打響了名堂，${MARKETS[t].size>=4e7?'市場一下子大了好幾倍。':'當地的電台開始播你的歌。'}`;}
+  d('happy',-8);d('att',-3);
+  return NG('反應冷淡')+(MARKETS[t].lang==='英語'&&S.region!=='west'?'你的口音被深夜清談節目拿來開玩笑。':'')+`${nm}的觀眾對你不太感興趣。幾年後，或許可以再試一次。`;
+}
+function langCard(t,diy){
+  const L=langNeed(t);
+  return {k:'外語學習',text:`要打入${MARKETS[t].n}，你得用${L}接受訪問、寫歌和做宣傳。你的${L}，還停留在入門程度。`,choices:[
+    ['請私人老師密集上課',()=>{d('money',-Math.min(60000,Math.max(0,S.money)));d('happy',-6);return expandRoll(t,1.25,diy);},'花錢，成功率較高'],
+    ['邊做邊學，硬著頭皮上',()=>{d('happy',-10);return expandRoll(t,.95,diy);},'口音可能被取笑'],
+    ['依賴翻譯，主打音樂本身',()=>expandRoll(t,.75,diy),'溝通有隔膜']]};
+}
+
+/* ============ borrowing & company debt ============ */
+function borrowCompany(){
+  const amt=Math.round(Math.max(20000,S.fans*.05));d('money',amt);S.coDebt+=Math.round(amt*1.2);d('rel',-6);d('happy',-3);
+  return `公司預支了 ${cash(amt)} 給你，連利息共 ${cash(Math.round(amt*1.2))}，日後會從你的收入中扣除。財務部的人看你的眼神變了。`;
+}
+function borrowFamily(){
+  if(S.family==='vampire'&&!S.flags.cut){d('rel',-6);d('happy',-6);return NG('借不到')+'你開口借錢，父母反過來問你：「你不是明星嗎？我們還想問你借。」';}
+  if(S.flags.cut){d('happy',-4);return NG('借不到')+'你已經和家人斷絕了關係。電話撥了出去，沒有人接。';}
+  const amt=S.family==='rich'&&!S.flags.cutoff?60000:S.family==='poor'?3000:S.family==='single'?6000:15000;
+  d('money',amt);d('rel',-9);d('happy',-4);
+  return OK('借到了')+(S.family==='poor'?`家人東拼西湊，借給你 ${cash(amt)}。你知道那是他們半年的伙食費。`:`家人借給你 ${cash(amt)}，說不用急著還。飯桌上，大家都沒有再提起你的音樂。`);
+}
+function borrowChoices(){
+  const o=[];
+  if(S.manager&&!['self','label'].includes(S.manager))o.push(['向經理人公司借錢',()=>borrowCompany(),'預支收入，要連利息還，人際關係下降']);
+  o.push(['向家人借錢',()=>borrowFamily(),'人際關係下降']);
+  return o;
+}
+function settleCoDebt(why){
+  if(!S.coDebt)return '';const a=S.coDebt;S.coDebt=0;d('money',-a);
+  return ` ${why}，你要即時清還欠公司的 ${cash(a)}。`;
+}
+
+/* ============ yearly focus ============ */
+function focusOptions(){
+  const o=[],s=S.s,add=(t,sub,run,hidden)=>o.push([t,run,sub,hidden]);
+  if(!S.debuted){
+    add('苦練唱功','唱功大升，快樂度略降',()=>{d('talent',RI(6,9));d('happy',-3);return pick(['你每天練到喉嚨沙啞。','你對著鏡子一遍又一遍地練習同一句高音。','老師說你的音準終於穩定下來了。']);});
+    add('上傳翻唱影片','可能一夜爆紅，也可能被取笑',()=>{
+      const p=.07+s.talent/350+(S.everViral?.05:0);
+      if(S.age<16)S.flags.uploadedYoung=true;
+      if(chance(p)){S.everViral=true;d('fans',RI(20000,150000)*Math.max(.5,s.talent/50));
+        logk('網上影片爆紅');return OK('一夜爆紅')+`你上傳的翻唱影片播放量破百萬！留言區有人問：「${S.age<16?'這個小朋友':'這個人'}是誰？」`;}
+      d('fans',RI(100,3000));
+      if(chance(.25)){d('happy',-8);return NG('被取笑')+'影片沒有多少人看，倒是有人留言說你「唱得像在殺雞」。';}
+      return '影片得到幾百個讚，有幾個陌生人開始追看你的頻道。';});
+    add('學習寫歌','靈感上升',()=>{d('crea',8);d('sediment',3);return pick(['你在筆記簿裡寫滿了歌詞。','你學會了第一組屬於自己的和弦進行。','你寫了十首歌，丟掉了九首。']);});
+    if(S.age<=18)add('專心讀書','人際關係上升',()=>{d('rel',6);d('talent',-1);return '成績表上的分數令父母很欣慰。';});
+    add('打工儲錢','賺錢，但練習時間減少',()=>{const m=S.age<16?RI(800,2000):RI(3000,7000);d('money',m);d('rel',3);d('crea',-2);d('happy',-3);
+      return pick(['你在便利店上夜班。','你在快餐店炸了一整年薯條。','你在婚宴上當駐場歌手，唱了一百遍同一首情歌。']);});
+    if(S.age>=14)add('參加選秀／試音','成功便能簽約',()=>{
+      const p=s.talent/120-.1+(S.fans>10000?.1:0);
+      if(chance(p)){S.q.unshift(mgrPickCard('評審當場遞給你名片：「你很有潛質。」'));return OK('試音成功')+'你在試音中一鳴驚人！';}
+      d('happy',-8);d('talent',2);return NG('落選')+'評審搖搖頭：「你仍需要磨練。」你在回家的巴士上哭了。';});
+    if(S.age>=17&&S.money>=3000)add('自資發行專輯','花 US$3,000 自己出專輯',()=>{d('money',-3000);S.q.unshift(releaseCard(true));return '你租了一間小錄音室，自己監製、自己混音。';});
+    add('休息玩樂','健康與快樂度回復',()=>{d('health',6);d('happy',12);return pick(['你和朋友去了海邊。','你睡了整整一個暑假。','你終於有時間看完一直想看的漫畫。']);});
+  } else {
+    (S.peakTier>=5&&S.age>=50)?add('推出經典回顧專輯','靈感枯竭，只能重溫經典',()=>{S.q.unshift(retroCard());return '你翻開了舊歌本。';}):add('發行新專輯',s.crea<30?'靈感偏低，作品可能失色':'出專輯是增加粉絲的主要方法',()=>{S.q.unshift(releaseCard(false));return '你走進錄音室。';});
+    add('宣傳曝光','粉絲與關注度上升；消耗靈感與快樂度',()=>{const f0=S.fans;addFans(S.fans*R(.05,.12)*(S.manager==='major'?1.3:1)+3000);d('att',RI(5,9));d('health',-4);d('crea',-5);d('happy',-6);
+      return pick(['你上了二十個綜藝節目，笑到臉都僵了。','你每天在社交媒體更新三次。','你跑遍了各大電台做訪問。']);});
+    add('商演／周邊賺錢','賺錢最快，但靈感明顯下降',()=>{const m=(S.fans*.25+8000)*share()*(S.manager==='shark'?1.5:1);d('money',m);d('crea',-10);d('happy',-5);d('health',-3);
+      return pick(['你唱了幾十場商演和婚宴，還推出了印有自己頭像的保溫瓶。','你在商場開幕禮剪了一整年的綵。','周邊產品賣得比專輯還好。']);});
+    if(S.fans>=3e5)add('巡迴演唱會','粉絲與收入上升；健康消耗大',()=>{d('money',S.fans*.6*share()-50000);addFans(S.fans*.08);d('health',-10);d('talent',3);d('crea',-6);d('happy',-6);
+      if(S.home==='hk'&&S.fans>=5e6)ms('hung','在紅館連開多場演唱會，被媒體拿來與 張學有 的經典巡迴相比');
+      if(S.age>=60)ms('stones',`${S.age}歲仍在巡迴演出，向 滾石老人團 致敬`);
+      return `你完成了${RI(12,40)}場巡迴演出。最後一晚，全場一起合唱你的歌。`;});
+    add('閉關創作','靈感上升，作品更有深度；關注度略降',()=>{d('crea',14);d('sediment',8);d('att',-3);return pick(['你搬到離島的小屋，整整一年沒有上網。','你每天只做一件事：寫歌。','你把自己關在錄音室，連經理人都找不到你。']);});
+    add('練習唱功','唱功上升',()=>{d('talent',5);d('happy',-2);return '你重新找回了聲樂老師，每天練氣。';});
+    add('休息','健康與快樂度回復',()=>{d('health',12);d('happy',15);d('crea',5);d('att',-2);return pick(['你推掉了所有工作，好好睡了一年。','你去了一趟長途旅行。','你學會了煮飯，也學會了關掉手機。']);});
+    add('應酬交際','人際關係大升；花錢，健康與快樂度略降',()=>{d('rel',12);d('happy',-4);d('health',-3);d('money',-Math.min(Math.max(S.money,0),10000));return pick(['你出席了一整年的飯局和慶功宴，認識了半個樂壇。','你請唱片公司的高層打了十幾場高爾夫球。','你在每一位前輩的生日派對上都有出現。']);});
+    add('陪伴家人','人際關係與快樂度上升',()=>{d('rel',12);d('happy',8);
+      if(S.family==='vampire'&&!S.flags.cut&&chance(.5)){d('money',-Math.max(0,S.money)*.1);d('happy',-6);return '你陪父母吃了很多頓飯。每一頓飯，他們都會提起最近手頭有點緊。';}
+      return '你陪家人吃了很多頓飯。原來他們一直把你的剪報貼在牆上。';});
+    if(s.happy<=50)add('看心理醫生','花錢，快樂度大升',()=>{d('money',-Math.min(Math.max(S.money,0),25000));d('happy',25);return '你第一次在一個陌生人面前，把所有事情說了出來。';});
+    // hidden options
+    if(s.crea>=72)add('✦ 為其他歌手寫歌','靈感達標，已解鎖',()=>{d('money',30000+S.fans*.02);d('sediment',4);d('crea',-4);S.flags.writer=(S.flags.writer||0)+1;
+      return '你替一位新人寫的歌拿下了冠軍。圈內人開始叫你「金牌創作人」。';},1);
+    if(S.money>=2e6&&!S.flags.label)add('✦ 創辦個人唱片公司','花 US$150萬，從此自己做主',()=>{d('money',-1.5e6);S.manager='label';S.flags.label=true;ach('自立門戶');logk('創辦個人唱片公司');
+      return '你在自己的公司門口掛上了招牌。從今天起，沒有人可以再叫你改歌。';},1);
+    if(S.fans>=8e6&&s.health>=45)add('✦ 世界巡迴','粉絲與財富大增；身體負擔極重',()=>{d('money',S.fans*share());boost(1.12);d('health',-18);d('happy',-8);
+      return `你用了一整年走遍${RI(25,40)}個城市，票房創下紀錄。`;},1);
+    if(S.band&&!S.band.active&&S.age>=35&&!S.flags.reunion)add('✦ 樂隊重組','舊隊友願意再聚',()=>{S.flags.reunion=1;d('money',S.fans*.4+200000);boost(1.25);d('happy',6);logk('樂隊重組');
+      return '重組演唱會門票十分鐘內售罄。第一首歌前奏響起時，台下有人在哭，台上也是。';},1);
+    if(S.age>=40&&s.crea>=65)add('✦ 轉做幕後','結束台前生涯',()=>{finish('backstage');return '你宣布不再登台，專心做監製和作曲。';},1);
+    if(S.age>=45||S.sink>=2)add('宣布退出樂壇','結束這段星途',()=>{finish('retire');return '你在社交媒體上寫下最後一段告別。';});
+  }
+  if(S.money<10000&&S.age>=16)add('借錢周轉','向經理人公司或家人借錢',()=>{S.q.unshift({k:'借錢',text:`你的戶口只剩下 ${cash(S.money)}。你打算向誰開口？`,choices:[...borrowChoices(),['算了，自己捱',()=>{d('happy',-3);return '你把每餐的預算減到最低。';}]]});return '你看著銀行月結單發呆。';});
+  if(S.oldImage>40&&S.age>=17){
+    add('✦ 激進轉型','一次過撕掉童星標籤',()=>{d('happy',-10);S.oldImage=Math.max(0,S.oldImage-60);
+      if(chance(.4)){scandal('激進轉型被批「學壞」',40);return NG('轉型失敗')+'你拍了一支大膽的音樂錄像。家長團體發聲明譴責，不少舊粉絲離你而去。';}
+      boost(1.15);return OK('轉型成功')+'新造型令所有人目瞪口呆。媒體終於不再叫你「小童星」了。';},1);
+    add('✦ 循序漸進轉型','慢慢改變形象',()=>{S.oldImage=Math.max(0,S.oldImage-20);mul('fans',.97);return '你一點一點改變造型和歌路。改變很慢，但很穩。';},1);
+  }
+  if(S.addiction>0)add('✦ 入住戒毒中心','有機會擺脫毒癮',()=>rehab(),1);
+  return o;
+}
+
+/* ============ events ============ */
+const EV=[];
+const E=o=>EV.push(o);
+
+/* --- family --- */
+E({id:'mid_uni',k:'家庭',once:1,if:()=>S.family==='middle'&&S.age>=16&&S.age<=18&&!S.debuted,w:4,
+  text:()=>'父母把大學申請表放在你桌上：「先讀個學位，音樂可以當興趣。」',
+  c:()=>[['聽從父母，報讀大學',()=>{d('rel',10);d('happy',-5);d('talent',-2);return '你考進了大學。課業佔去不少時間，但父母終於放下心頭大石。';}],
+    ['堅持全職追夢',()=>{d('rel',-15);d('happy',-6);d('crea',5);return '你和父母大吵一場。關上房門後，你寫下了人生第一首真正屬於自己的歌。';}],
+    ['給我兩年時間',()=>{d('rel',-3);S.flags.deadline=S.age+2;return '父母勉強答應：兩年內做不出成績，就乖乖回去讀書。';}]]});
+E({id:'mid_deadline',k:'家庭',once:1,force:1,if:()=>S.flags.deadline&&S.age>=S.flags.deadline&&!S.debuted,
+  text:()=>'兩年之期已到，你仍未出道。父母把大學申請表再一次放在你桌上。',
+  c:()=>[['履行承諾，回去讀書',()=>{d('rel',10);d('talent',-3);return '你一邊讀書，一邊在深夜偷偷寫歌。';}],
+    ['違背承諾，繼續追夢',()=>{d('rel',-20);d('happy',-8);return '父親說：「你以後不用再回來吃飯。」';}]]});
+E({id:'poor_rent',k:'家庭',cd:4,if:()=>S.family==='poor'&&S.age<=30,w:3,
+  text:()=>S.debuted?'母親打電話來，支支吾吾了很久，最後才說：家裡這個月又交不起租了。':'家裡又交不起租了。母親在廚房裡數著硬幣，一句話也沒有說。',
+  c:()=>S.debuted?[
+    ['替家裡交租',()=>{d('money',-Math.min(Math.max(S.money,0),12000));d('rel',10);d('happy',6);return '你轉了錢過去。母親在電話那頭哭了。';}],
+    S.money>=300000?['替家人買一個新單位',()=>{d('money',-250000);d('rel',20);d('happy',12);logk('替家人置業');return '搬屋那天，父親摸著新屋的牆，說不出話來。';}]:null,
+    ['叫他們自己想辦法',()=>{d('rel',-12);d('happy',-6);return '你掛了電話，但那一晚怎樣也睡不著。';}]]
+  :[['課餘去打工',()=>{d('money',3000);d('rel',8);d('talent',-2);d('health',-3);return '你把第一份人工全數交給了母親。';}],
+    ['去街頭賣唱',()=>{d('money',RI(800,2500));d('talent',3);if(chance(.2)){d('fans',8000);d('att',6);return OK('意外走紅')+'有路人拍下你賣唱的片段放上網，竟然有幾千人轉發。';}return '你在天橋底唱了一整個月，帽子裡的硬幣剛好夠交租。';}],
+    ['假裝看不見',()=>{d('rel',-10);d('happy',-6);return '你戴上耳機，把音樂開到最大聲。';}]]});
+E({id:'nepo_label',k:'記者會',once:1,if:()=>S.family==='stardad'&&S.debuted,w:5,
+  text:()=>'記者會上，有記者問：「如果你不是巨星的孩子，你覺得自己能出道嗎？」',
+  c:()=>[['坦然承認並感謝父親',()=>{boost(1.05);return '你的坦白反而贏得不少掌聲。';}],
+    ['當場反駁',()=>{scandal('記者會上怒斥記者',20);return '片段被剪成「星二代發脾氣」，在網上瘋傳。';}],
+    ['一笑置之，用作品回答',()=>{d('crea',6);d('happy',-4);return '你回家後寫了一首歌，歌名叫《不是誰的孩子》。';}]]});
+E({id:'nepo_scandal',k:'家庭',once:1,if:()=>S.family==='stardad'&&S.age>=16,w:1,
+  text:()=>'你那位巨星父親被揭發婚外情，狗仔隊一連幾天守在你家樓下。',
+  c:()=>[['公開支持母親',()=>{d('rel',-5);boost(1.05);return '你的聲明寫得很克制，卻比任何頭條都有力。';}],
+    ['保持沉默',()=>{d('happy',-8);return '你關掉手機，等風暴過去。';}],
+    ['借勢宣傳新歌',()=>{d('rel',-10);if(chance(.5)){boost(1.15);return OK('點擊暴升')+'新歌的點擊率暴升，但連你自己都覺得有點噁心。';}scandal('借父親醜聞宣傳新歌',30);return NG('弄巧反拙')+'網民一致認為你冷血。';}]]});
+E({id:'nepo_compare',k:'樂評',cd:6,if:()=>S.family==='stardad'&&S.debuted,w:1.5,
+  text:()=>`樂評寫道：「無論怎樣努力，${he()}永遠活在父親的影子下。」`,
+  c:()=>[['加倍苦練',()=>{d('talent',6);d('happy',-6);return '你推掉了所有通告，回到練習室。';}],
+    [`與父親合唱一曲`,()=>{boost(1.12);d('happy',-3);return `${S.gender==='f'?'父女':'父子'}合唱在頒獎禮上轟動全場，但「靠父蔭」的聲音更大了。`;}]]});
+E({id:'rich_biz',k:'家族',once:1,if:()=>S.family==='rich'&&S.age>=22&&S.age<=34,w:3,
+  text:()=>'家族會議上，父親宣布要你接手集團旗下的地產業務：「玩音樂玩夠了吧？」',
+  c:()=>[['回家繼承家業',()=>{finish('heir');return '你換上西裝，坐進了頂層的辦公室。那支結他，從此掛在牆上。';}],
+    ['斷然拒絕',()=>{d('rel',-20);d('money',-Math.min(Math.max(S.money,0)*.5,150000));d('happy',-6);return '家族停止了對你的一切資助。你第一次需要為下個月的租金發愁。';}],
+    ['答應兼顧兩邊',()=>{d('health',-8);d('crea',-10);d('happy',-12);d('money',50000);return '你白天開會，晚上錄音，每天只睡四小時。';}]]});
+E({id:'rich_buy',k:'誘惑',once:1,if:()=>S.family==='rich'&&!S.debuted&&S.age>=16&&S.money>=80000,w:3,
+  text:()=>'你發現只要花一筆錢，就能請頂級監製替你出專輯，再買下各大電台的宣傳時段。',
+  c:()=>[['花錢買出道',()=>{d('money',-80000);S.manager='self';S.signed=true;S.ageSigned=S.age;const t=debut();d('fans',30000);
+      if(chance(.5)){scandal('被揭用錢買出道',35);return t+' '+NG('被揭發')+'很快便有人爆料，指你的出道是用錢買回來的。';}return t+' '+OK('無人察覺')+'宣傳做得天衣無縫。';}],
+    ['不，要靠自己',()=>{d('happy',3);return '你把銀行卡收回抽屜裡。';}]]});
+E({id:'vamp_money',k:'家庭',cd:3,if:()=>S.family==='vampire'&&!S.flags.cut&&S.debuted&&S.money>=20000,w:4,
+  prep:()=>({r:pick(['換一間大屋','還清賭債','投資朋友的生意','買一輛新車','替弟弟還卡數']),a:Math.round(S.money*.3)}),
+  text:x=>`父母又打電話來了。這次說要${x.r}，一開口就是 ${cash(x.a)}。`,
+  c:x=>[['照付',()=>{d('money',-x.a);d('rel',5);d('happy',-6);return '錢轉過去之後，他們很久沒有再打來。直到下一次。';}],
+    ['只給一部分',()=>{d('money',-x.a/3);d('rel',-5);d('happy',-4);return '母親在電話那頭說：「養你這麼大，就給這麼一點？」';}],
+    ['拒絕',()=>{d('rel',-15);if(chance(.5)){scandal('被父母向周刊爆料「不孝」',35);return NG('被父母爆料')+'第二天，父母在周刊上哭訴你「紅了就不認爹娘」。';}return OK('暫時平息')+'電話被狠狠掛斷。';}]]});
+E({id:'vamp_cut',k:'家庭',once:1,if:()=>S.family==='vampire'&&S.s.rel<=30&&S.debuted,w:4,
+  text:()=>'律師問你：要不要正式切斷與父母的財務關係？',
+  c:()=>[['斷絕關係',()=>{S.flags.cut=1;S.flags.cutFree=1;d('rel',-30);d('happy',-10);if(S.manager==='parent')S.manager='self';queueCrisis('與父母決裂');logk('與父母決裂');return '你簽下文件的那一刻，手一直在抖。';}],
+    ['再給他們一次機會',()=>{d('rel',8);d('money',-Math.max(0,S.money)*.15);d('happy',-6);return '你又一次妥協了。';}]]});
+E({id:'vamp_loan',k:'家庭',once:1,if:()=>S.family==='vampire'&&!S.flags.cut&&S.debuted&&S.age>=20,w:2,
+  prep:()=>({a:RI(50000,300000)}),
+  text:x=>`你收到銀行的追討信：父母用你的名義借了 ${cash(x.a)}。`,
+  c:x=>[['替他們還錢',()=>{d('money',-x.a);d('happy',-8);return '你默默把錢還清，沒有告訴任何人。';}],
+    ['報警',()=>{d('rel',-25);scandal('與父母對簿公堂',30);return '「歌手報警告父母」登上了所有頭條。';}]]});
+E({id:'ctrl_practice',k:'家庭',cd:2,if:()=>S.family==='control'&&S.age<=16,w:6,
+  text:()=>'父親規定你每天放學後練習六小時。唱錯一個音，就要從頭再來。',
+  c:()=>[['默默忍受',()=>{d('talent',8);d('happy',-10);return '你學會了在練習時讓自己的腦袋放空。';}],
+    ['頂撞父親',()=>{d('rel',-12);d('talent',2);d('happy',-4);return '他罵了你一整晚。第二天，練習照舊。';}],
+    ['向老師求助',()=>{d('rel',-6);d('happy',6);return '老師約見了你的父親。練習時間減到每天四小時。';}]]});
+E({id:'ctrl_contract',k:'家庭',once:1,force:()=>S.age>=13,if:()=>S.family==='control'&&!S.signed&&S.age<=16,
+  text:()=>'父親沒有問過你，就替你和一間唱片公司簽了約。經理人一欄，寫的是他自己的名字。',
+  c:()=>[['接受安排',()=>{S.manager='parent';S.signed=true;S.ageSigned=S.age;const t=debut();d('fans',20000);return t+' 你連一句「我想不想」都沒有機會說。';}],
+    ['哭鬧著不肯簽',()=>{S.manager='parent';S.signed=true;S.ageSigned=S.age;const t=debut();d('fans',15000);d('happy',-10);d('rel',-8);return NG('抗議無效')+`你只有 ${S.age} 歲，父親的簽名早已生效。${t}`;}]]});
+E({id:'ctrl_takeback',k:'家庭',once:1,if:()=>S.family==='control'&&S.manager==='parent'&&S.age>=19,w:5,
+  text:()=>'你已經成年了。是時候拿回自己事業的控制權嗎？',
+  c:()=>[['解僱父親',()=>{d('rel',-25);d('happy',8);S.q.unshift(mgrPickCard('你在律師陪同下，親手把解僱信交給父親。',1));queueCrisis('與父親決裂');logk('解僱父親');return '父親看完信，一言不發地離開了。';}],
+    ['再忍一忍',()=>{d('happy',-10);return '你告訴自己：再等一年吧。';}]]});
+E({id:'ctrl_interfere',k:'家庭',cd:2,if:()=>S.family==='control'&&S.manager==='parent'&&S.debuted,w:2,
+  text:()=>'父親在你不知情下，推掉了一個你很想做的音樂合作，換成三場收入更高的商演。',
+  c:()=>[['跟他大吵一場',()=>{d('rel',-10);d('happy',-5);return '你們吵到鄰居報警。';}],
+    ['算了',()=>{d('money',20000);d('crea',-6);d('happy',-8);return '你在商演台上唱著自己最討厭的那首歌。';}]]});
+E({id:'child_image',k:'形象',cd:2,if:()=>S.oldImage>50&&S.age>=16&&S.age<=26,w:3,
+  text:()=>'你以成年人身份接受訪問，主持人卻仍然叫你「乖乖小童星」，還播放了你八歲時的片段。',
+  c:()=>[['一笑置之',()=>{d('happy',-8);return '你笑著配合，回到化妝間才把杯子摔在地上。';}],
+    ['當場發脾氣',()=>{S.oldImage=Math.max(0,S.oldImage-10);scandal('節目中途發脾氣離場',20);return '你摘下咪高峰離場。這是你第一次在鏡頭前說「不」。';}]]});
+E({id:'music_child',k:'家庭',once:1,if:()=>S.family==='music'&&S.age<=14,w:4,
+  text:()=>'鋼琴老師告訴父母，你有絕對音感。父親想送你去讀古典音樂。',
+  c:()=>[['學古典',()=>{d('talent',8);d('crea',4);d('happy',-5);d('rel',5);return '你每天練琴四小時，指尖長出了繭。';}],
+    ['我想玩自己喜歡的音樂',()=>{d('crea',8);d('rel',-5);return `父親嘆了口氣：「${GENRES[S.genre].name}？好吧。」`;}]]});
+E({id:'music_critic',k:'家庭',once:1,if:()=>S.family==='music'&&S.debuted,w:3,
+  text:()=>'你的父親，一位德高望重的指揮家，在訪問中說你的作品「只是商業垃圾」。',
+  c:()=>[['公開反駁',()=>{d('rel',-12);boost(1.05);d('happy',-5);return '父子隔空罵戰成了樂壇年度話題。';}],
+    ['邀請父親合作',()=>{if(chance(.6)){d('talent',6);d('rel',10);boost(1.08);return OK('合作成功')+'你們合作了一首交響編曲版的舊歌。他在錄音室裡第一次對你點頭。';}d('rel',-8);return NG('不歡而散')+'錄音到第二天，他摔下指揮棒走了。';}],
+    ['不回應',()=>{d('happy',-8);return '你把那篇訪問剪下來，貼在錄音室牆上。';}]]});
+E({id:'single_ill',k:'家庭',once:1,if:()=>S.family==='single'&&S.age>=18,w:2,
+  text:()=>'母親在工作時暈倒，醫生說她需要長期治療。',
+  c:()=>[['推掉工作照顧她',()=>{mul('fans',.9);d('rel',15);d('happy',-8);d('money',-Math.min(Math.max(S.money,0),20000));S.flags.momIll=S.age;return '你在醫院的走廊裡寫完了一整張專輯的歌詞。';}],
+    ['付錢請人照顧，繼續工作',()=>{d('money',-Math.min(Math.max(S.money,0),40000));d('rel',-8);d('happy',-12);S.flags.momIll=S.age;return '你每晚演出後都會打電話給她，即使她已經睡了。';}]]});
+E({id:'single_loss',k:'家庭',cls:'crisis',once:1,if:()=>S.flags.momIll&&S.age>=S.flags.momIll+2,w:2,
+  text:()=>'母親在一個平靜的早上離開了。床邊放著一部收音機，正在播你的歌。',
+  c:()=>[['……',()=>{d('happy',-15);queueCrisis('失去母親');logk('母親離世');return '你在喪禮上唱了她最喜歡的那首歌，唱到一半就唱不下去。';}]]});
+
+/* --- youth --- */
+E({id:'crush',k:'青春',once:1,if:()=>S.age>=13&&S.age<=17,w:2,
+  prep:()=>({n:pick(LOVERS)}),
+  text:x=>`你喜歡上同班的${x.n}。每次經過對方的座位，你都會把歌詞寫得更甜一點。`,
+  c:x=>[['鼓起勇氣告白',()=>{if(chance(.5)){d('happy',8);d('crea',6);return OK('告白成功')+`${x.n}紅著臉點了點頭。那年夏天，你寫了十首情歌。`;}d('happy',-8);d('crea',8);return NG('被拒絕')+'對方說：「我們還是做朋友吧。」你寫出了人生第一首失戀歌。';}],
+    ['把心意藏進歌裡',()=>{d('crea',8);d('sediment',3);return '那首歌，你從來沒有唱給對方聽。';}]]});
+E({id:'bully',k:'校園',cd:3,if:()=>S.age<=16,w:1.2,
+  text:()=>'有同學把你唱歌的片段轉發到全級群組，配上嘲笑的字句。',
+  c:()=>[['照樣繼續唱',()=>{d('happy',-5);d('talent',3);return '你在學校音樂會上唱了同一首歌，這次全場拍手。';}],
+    ['暫停上傳',()=>{d('happy',-3);return '你把頻道設成了私人。';}],
+    ['找對方算賬',()=>{d('rel',-4);d('happy',3);return '你們被叫到訓導處，家長也被請了來。';}]]});
+E({id:'pub_night',k:'機會',once:1,if:()=>S.region==='west'&&!S.debuted&&S.age>=15,w:3,
+  text:()=>'家附近的酒吧每逢星期五都有開放咪之夜，台下坐滿了喝醉的樂迷。',
+  c:()=>[['每個星期都去唱',()=>{d('talent',5);d('fans',2000);return '一年下來，酒吧老闆開始在門口的黑板寫上你的名字。';}],
+    ['不去',()=>'你寧願留在家裡寫歌。']]});
+E({id:'scout',k:'機會',cd:2,force:()=>chance(.55),if:()=>!S.signed&&S.age>=13&&(S.fans>=20000||S.s.talent>=58||S.everViral),
+  text:()=>'一位唱片公司的星探找上門：「我看過你的表演，有興趣聊聊嗎？」',
+  c:()=>[['簽約',()=>{S.q.unshift(mgrPickCard('你們在餐廳談了三個小時。'));return '你答應了。';}],
+    ['先完成學業',()=>{d('rel',6);return '星探留下名片：「想清楚了就打給我。」';}]]});
+E({id:'trainee_offer',k:'機會',once:1,force:()=>S.age>=13,if:()=>S.region==='jk'&&!S.signed&&S.age<=16,
+  text:()=>'一間大型娛樂公司在街頭舉行選拔，你被選中成為練習生候選人。',
+  c:()=>[['加入練習生',()=>pickMgr('trainee')],
+    ['婉拒，走自己的路',()=>'你看著宿舍的照片，最後還是搖了搖頭。']]});
+E({id:'trainee_date',k:'練習生',once:1,if:()=>S.trainee>0,w:2,
+  text:()=>'你和同期的練習生偷偷拍拖。公司嚴禁戀愛。',
+  c:()=>[['分手',()=>{d('happy',-8);return '你們在後樓梯說了再見。';}],
+    ['繼續偷偷交往',()=>{if(chance(.4)){S.trainee++;d('happy',-10);return NG('被公司發現')+'你們被經理拍到了。你的出道計劃被延後一年。';}d('happy',8);d('crea',4);return OK('瞞過了公司')+'在宿舍熄燈後傳的每一個訊息，都是你最快樂的時光。';}]]});
+E({id:'reality',k:'現實',cd:5,force:1,if:()=>!S.debuted&&S.age>=30,
+  text:()=>'身邊的朋友都結婚、買樓了，你仍然在等一個機會。',
+  c:()=>[['繼續追夢',()=>{d('happy',-8);d('sediment',5);return '你在出租房裡又寫了一首歌。';}],
+    ['放棄音樂，找份正職',()=>{finish('ordinary');return '你把結他放回琴盒，在招聘網站上填好了履歷。';}]]});
+E({id:'military',k:'兵役',once:1,force:()=>S.age>=24||chance(.3),if:()=>S.gender==='m'&&(S.home==='kr'||S.home==='tw')&&S.age>=20&&S.age<=28&&S.jail===0,
+  text:()=>S.home==='kr'?'兵役通知書寄到了。十八個月，不能發片，不能登台。':'入營通知寄到了。你要放下工作去服役。',
+  c:()=>S.home==='kr'?[
+    ['按時入伍',()=>{mul('fans',.82);d('att',-10);d('happy',-6);d('health',5);logk('入伍服兵役');if(chance(.5)){d('att',6);return OK('粉絲守候')+'退伍那天，軍營外排滿了舉著燈牌的粉絲。';}return NG('人氣下滑')+'十八個月後回來，樂壇已經換了一批新面孔。';}],
+    ['想辦法延期',()=>{if(chance(.5)){d('happy',-8);return OK('延期成功')+'你以學業為由延後入伍，但這件事總有一天要面對。';}S.flags.disgraced=true;scandal('涉嫌逃避兵役',60);return NG('被揭發')+'媒體揭發你偽造病歷逃避兵役。你被冠上「失德藝人」之名。';}]]
+  :[['按時服役',()=>{mul('fans',.92);d('att',-5);d('health',4);logk('服兵役');return OK('平安退伍')+'退伍後，你在臉書上載了一張穿軍服的照片，留言區一片「辛苦了」。';}],
+    ['想辦法逃避兵役',()=>{if(chance(.7)){S.flags.twEvade=S.age;d('happy',-4);return OK('逃避成功')+'你用了一些「方法」取得免役資格。這件事，你沒有告訴任何人。';}S.flags.disgraced=true;scandal('逃避兵役被揭發',60);return NG('被揭發')+'有記者查出你的免役證明有問題。你被冠上「失德藝人」之名。';},'短期無事，但總有一天要還']]});
+E({id:'tw_reckon',k:'清算',cls:'crisis',once:1,force:()=>chance(.25),if:()=>S.flags.twEvade&&S.age>=S.flags.twEvade+5&&tierIdx()>=2,
+  text:()=>`網民翻出你${S.flags.twEvade}歲時逃避兵役的證據，要求你公開交代。`,
+  c:()=>[['公開道歉',()=>{S.flags.disgraced=true;scandal('多年前逃避兵役被網民清算',45);return '你在記者會上承認了一切。那頂「失德藝人」的帽子，你這輩子都摘不下來。';}],
+    ['堅決否認',()=>{if(chance(.5)){S.flags.disgraced=true;scandal('逃避兵役證據確鑿仍死口否認',65);return NG('證據確鑿')+'更多文件被公開。你的否認令事件燒得更旺。';}return OK('風波平息')+'證據不夠充分，話題兩星期後就淡了。';}]]});
+
+/* --- manager & career --- */
+E({id:'major_image',k:'公司',cd:3,if:()=>S.manager==='major'&&S.debuted,w:2,
+  prep:()=>({g:GENRES[pick(rf().main)].name}),
+  text:x=>`公司開會後通知你：下一張專輯要改走${x.g}主流路線，造型也要全面更新。`,
+  c:()=>[['服從公司',()=>{boost(1.08);d('crea',-8);d('sediment',-5);d('happy',-6);return '新造型的海報掛滿了地鐵站。鏡子裡的人，你有點認不出來。';}],
+    ['堅持原本風格',()=>{const r=rnd();d('rel',-5);
+      if(r<.3){S.q.unshift(mgrPickCard('你恢復了自由身，但要重新找人打理事業。',1));d('happy',-10);mul('fans',.9);logk('被唱片公司解約');return NG('被公司解約')+'公司以「不合作」為由與你解約，你的歌從公司的宣傳計劃中消失了。';}
+      if(r<.55){mul('fans',.85);d('happy',-8);return NG('被冷處理')+'公司沒有再說甚麼。你的新歌宣傳期被悄悄取消了。';}
+      d('sediment',6);return OK('公司讓步')+'樂迷說你是「少數仍有骨氣的歌手」。';}]]});
+E({id:'shark_over',k:'經理人',cd:2,if:()=>S.manager==='shark'&&S.debuted,w:2.5,
+  text:()=>'經理人一年替你接了二百多個通告。你已經三個月沒有休息過一天。',
+  c:()=>[['繼續做',()=>{d('money',S.fans*.1+30000);d('health',-12);d('happy',-12);return '你在保母車上睡覺，在化妝間吃飯。';}],
+    ['堅持放假',()=>{d('health',8);d('happy',6);d('money',-20000);return '經理人黑著臉答應了，但扣了你一筆「違約金」。';}]]});
+E({id:'shark_run',k:'經理人',cls:'crisis',once:1,if:()=>S.manager==='shark'&&S.money>=50000,w:1.5,
+  text:()=>'經理人突然失聯。你這才發現，公司戶口被提走了一大筆錢。',
+  c:()=>[['報警追討',()=>{d('money',-S.money*.55);S.manager='self';queueCrisis('經理人捲款潛逃');if(chance(.3)){d('money',S.money*.3);return OK('追回部分')+'警方在機場截住了他，你追回了一部分款項。';}return NG('追討無門')+'警方說人已經離境了。';}],
+    ['自認倒楣',()=>{d('money',-S.money*.55);d('happy',-8);S.manager='self';queueCrisis('經理人捲款潛逃');return '你換了所有密碼，從此學會自己看賬。';}]]});
+E({id:'parent_embezzle',k:'家庭',cls:'crisis',once:1,if:()=>S.manager==='parent'&&S.family==='vampire'&&S.money>=20000,w:3,
+  text:()=>'會計師發現，你的父母作為經理人，多年來一直私下挪用你的收入。',
+  c:()=>[['解僱他們並追討',()=>{d('money',-S.money*.4);d('rel',-30);S.flags.cut=1;S.q.unshift(mgrPickCard('你需要一位真正替你著想的人。',1));queueCrisis('被父母出賣');return '你在律師樓簽文件的時候，父親在門外罵你忘恩負義。';}],
+    ['原諒他們',()=>{d('money',-S.money*.4);d('rel',5);d('happy',-15);return '你甚麼都沒有說，只是換了一個新的銀行戶口。';}]]});
+E({id:'contract_slave',k:'合約',once:1,if:()=>(S.manager==='major'||S.manager==='trainee')&&S.debuted&&S.age>=(S.ageSigned||0)+5,w:3,
+  text:()=>`你仔細翻看合約，發現自己只拿收入的${Math.round(share()*10)}成，而合約還有好幾年才到期。`,
+  c:()=>[['入稟解約',()=>{d('money',-Math.min(Math.max(S.money,0)*.4,500000));mul('fans',.88);S.q.unshift(mgrPickCard('官司終於完結。你重獲自由身。',1));queueCrisis('解約官司');return '官司打了兩年，耗盡了你的積蓄。';}],
+    ['忍到合約完結',()=>{d('happy',-12);return '你在日曆上倒數著合約到期的日子。';}]]});
+E({id:'trainee_contract_end',k:'合約',once:1,if:()=>S.manager==='trainee'&&S.debuted&&S.age>=(S.ageSigned||0)+7,w:5,
+  text:()=>'七年合約期滿。公司提出續約，條件比以前好得多。',
+  c:()=>[['續約',()=>{d('money',300000);S.manager='major';return '你簽下了新合約，分成終於像樣了。';}],
+    ['自立門戶',()=>{S.manager='self';mul('fans',.88);d('happy',8);return '你離開了那間把你養大的公司，第一次自己決定下一首歌。';}]]});
+E({id:'expand',k:'市場',cd:3,force:()=>chance(.6),if:()=>S.debuted&&!S.jail&&S.trainee===0&&targets().length&&S.fans>=capFor()*.25,
+  prep:()=>{const ts=targets(),t=ts.sort((a,b)=>ROUTES[S.home][b]*rnd()-ROUTES[S.home][a]*rnd())[0],mg=S.manager||'self',self=mg==='self'||mg==='label';
+    const p=clamp(S.fans/(capFor()*.5)*MGR_EXP[mg]*.8,.1,.95);return {t,nm:MARKETS[t].n,self,ok:chance(p)};},
+  text:x=>x.self?`你在${S.markets.map(m=>MARKETS[m].n).join('、')}的人氣已接近上限。沒有經理人替你拍板，要不要進軍${x.nm}，由你自己決定。`
+    :x.ok?`經理人看完你的粉絲數據，拍板說：「是時候進軍${x.nm}了。」`:`你向經理人提出想進軍${x.nm}。經理人看完數據，搖了搖頭：「你的人氣還未夠。」`,
+  c:x=>x.self?[[`自費開拓${x.nm}`,()=>goExpand(x.t,150000,true),'自負盈虧，成功率較低'],['再等等',()=>'你決定先鞏固現有的樂迷。']]
+    :x.ok?[['接受安排',()=>goExpand(x.t,50000,false)],['婉拒',()=>'你說自己還想留在熟悉的地方。']]
+    :[['接受經理人的判斷',()=>{d('happy',-4);return '你按捺住了。也許明年吧。';}],['自掏腰包硬闖',()=>goExpand(x.t,200000,true),'不聽經理人勸告']]});
+
+/* --- temptation, money, health --- */
+E({id:'drug_offer',trouble:1,k:'誘惑',cls:'dark-temptation',cd:3,if:()=>S.age>=16&&(S.debuted||S.genre==='rock'||S.genre==='rap')&&S.addiction===0&&!S.flags.party,
+  w:()=>(tierIdx()+1)*(S.genre==='rock'?1.6:S.genre==='rap'?1.3:1)*(S.s.happy<40?1.8:1)*(S.flags.recentHit===S.age?2:1)*(S.flags.rehabbed?.5:1)*.45,
+  text:()=>'慶功派對開到凌晨。有人塞給你一小包白色粉末：「試試吧，煩惱全消，靈感源源不絕。」',
+  c:()=>[['拒絕',()=>'你把它放回桌上，獨自走出了派對。'],
+    ['嘗試一次',()=>useDrug(),'靈感與快樂度大升……代價未知']]});
+E({id:'drug_party',k:'誘惑',cls:'dark-temptation',cd:1,force:1,if:()=>S.flags.party&&S.addiction===0,
+  text:()=>'派對進行到第三晚，房間裡瀰漫著煙霧。有人把一包粉末推到你面前。',
+  c:()=>{S.flags.party=0;return [['拒絕',()=>'你推開房門，呼吸了一口清晨的空氣。'],['嘗試一次',()=>useDrug(),'靈感與快樂度大升……代價未知']];}});
+E({id:'drug_crave',k:'毒癮',cls:'crisis',cd:1,force:1,if:()=>S.addiction>=30,
+  text:()=>'毒癮又發作了。手在發抖，腦袋裡只剩下一個念頭。',
+  c:()=>[['再用一次',()=>useDrug()],
+    ['入住戒毒中心',()=>rehab(),'花錢，有機會成功'],
+    ['咬緊牙關硬撐',()=>{d('happy',-15);d('health',-5);d('addiction',-10);return '你在浴室地上熬了三天三夜。';}]]});
+E({id:'drug_after_hit',k:'誘惑',cls:'crisis',cd:1,force:1,if:()=>S.flags.drugHit,
+  text:()=>'新專輯大獲好評，樂評說這是你「靈魂最赤裸的作品」。慶功宴上，那包熟悉的粉末又出現在你面前。',
+  c:()=>{S.flags.drugHit=false;return [['再來一次，追求下一張神作',()=>useDrug(),'上一次成功了，這一次呢？'],
+    ['就此收手',()=>{d('happy',-10);if(S.addiction>=30)d('health',-8);d('addiction',-10);return '你把它沖進了馬桶。那一晚，你失眠到天亮。';}]];}});
+E({id:'alcohol',k:'誘惑',cd:4,if:()=>S.debuted&&S.age>=18,w:()=>S.s.happy<40?2:1,
+  text:()=>'巡迴期間，你開始每晚喝到斷片才能入睡。',
+  c:()=>[['戒酒',()=>{d('happy',-6);d('health',4);return '頭一個月很難熬，但你的聲音變得清亮了。';}],
+    ['繼續喝',()=>{d('health',-8);d('crea',4);d('happy',10);S.flags.drink=(S.flags.drink||0)+1;return '酒精讓你暫時忘記台下的空位。';},'快樂度上升，健康受損']]});
+E({id:'dui',k:'意外',once:1,if:()=>(S.flags.drink||0)>=1&&S.age>=18,w:1.5,
+  text:()=>'你酒後駕車，撞上了路邊的欄杆。幸好無人受傷，但警察已經到了。',
+  c:()=>[['認罪並公開道歉',()=>{d('money',-30000);if(chance(.3))return NG('入獄一年')+'法官判你即時入獄。'+startJail(1,'酒後駕駛入獄');scandal('酒後駕駛被捕',35);return OK('免於坐牢')+'你被判社會服務令及停牌。道歉記者會上，你鞠躬了足足十秒。';}],
+    ['請大律師抗辯',()=>{d('money',-Math.min(Math.max(S.money,0),120000));if(chance(.5))return NG('敗訴入獄')+'你還因「毫無悔意」被加重刑罰。'+startJail(1,'酒後駕駛入獄');scandal('酒後駕駛被捕',25);return OK('無罪釋放')+'大律師找到了程序漏洞，但民間觀感很差。';}]]});
+E({id:'gamble',trouble:1,k:'誘惑',cd:5,if:()=>S.debuted&&S.money>=50000,w:()=>S.region==='gc'?1.6:1,
+  text:()=>`朋友邀請你去${rf().casino}的賭場貴賓廳「玩兩手」。`,
+  c:()=>[['去',()=>{if(chance(.4)){d('money',S.money*.3);d('happy',5);return OK('大贏')+'你贏了一大筆，朋友叫你「賭神」。';}d('money',-S.money*.4);d('happy',-12);return NG('大輸')+'你在一晚之間輸掉了接近一半身家。';}],
+    ['不去',()=>'你說明天要早起錄音。']]});
+E({id:'invest',trouble:1,k:'投資',cd:6,if:()=>S.money>=200000,w:1.5,
+  prep:()=>({b:pick(['加密貨幣項目','連鎖餐廳','網紅護膚品牌','電影製作','電動滑板車公司'])}),
+  text:x=>`好友邀請你投資${x.b}，說「穩賺不賠」。`,
+  c:x=>[['投資',()=>{if(chance(.3)){d('money',S.money*.4);return OK('大賺')+'項目竟然大賺，你多了一筆意外之財。';}d('money',-S.money*.35);d('happy',-10);return NG('血本無歸')+`${x.b}一年後倒閉，連好友也不見了。`;}],
+    ['婉拒',()=>'你說自己只懂唱歌。']]});
+E({id:'tax',trouble:1,k:'官司',once:1,if:()=>S.debuted&&S.money>=300000,w:1,
+  text:()=>'稅務局指你過去幾年少報收入，要求補稅及罰款。',
+  c:()=>[['補稅了事',()=>{d('money',-S.money*.25);d('happy',-5);return '你開了一張很大的支票，然後換了一位會計師。';}],
+    ['提出上訴',()=>{if(chance(.5))return OK('上訴得直')+'稅局撤回了指控。';d('money',-S.money*.35);scandal('逃稅官司敗訴',35);queueCrisis('逃稅官司');return NG('敗訴')+'罰款比原來多出一倍。';}]]});
+E({id:'cancel',k:'意外',cd:5,if:()=>S.debuted&&tierIdx()>=3,w:1,
+  prep:()=>({r:pick(['颱風','場地結構問題','傳染病爆發','主辦單位倒閉'])}),
+  text:x=>`因為${x.r}，你的演唱會被迫取消。主辦方要求你分擔損失。`,
+  c:()=>[['自掏腰包全數退款給樂迷',()=>{d('money',-Math.min(Math.max(S.money,0),S.fans*.08+30000));boost(1.04);return '樂迷在網上自發替你宣傳：「這才是真正的偶像。」';}],
+    ['按合約處理',()=>{d('money',-Math.min(Math.max(S.money,0),S.fans*.03+10000));mul('fans',.95);return '退款手續拖了半年，留言區一片罵聲。';}]]});
+E({id:'friend_borrow',trouble:1,k:'朋友',cd:5,if:()=>S.money>=30000,w:1,
+  text:()=>'中學好友向你借錢，說家人急需做手術。',
+  c:()=>[['借給他',()=>{d('money',-S.money*.2);if(chance(.4))return OK('如數歸還')+'一年後，他把錢連同一封信還給了你。';d('happy',-6);return NG('一去不返')+'後來你在社交媒體上看到他在外地度假。';}],
+    ['不借',()=>{d('happy',-4);return '你說最近手頭也緊。說完之後，你一整晚睡不著。';}]]});
+E({id:'health_warn',k:'健康',cd:2,force:()=>chance(.7),if:()=>S.s.health<35,
+  text:()=>'醫生看著你的報告皺眉：「再這樣下去，你的身體會撐不住。」',
+  c:()=>[['停工休養',()=>{d('health',20);mul('fans',.9);d('happy',8);d('money',-Math.min(Math.max(S.money,0),20000));return '你在醫院躺了兩個月，出院時瘦了一圈。';}],
+    ['硬撐下去',()=>{d('happy',-5);if(chance(.35)){d('health',-15);return NG('台上暈倒')+'你在後台暈倒，被救護車送走。';}return OK('撐過去了')+'你吞了兩粒止痛藥，繼續上台。';}]]});
+E({id:'vocal',k:'健康',once:1,if:()=>S.debuted&&S.age>=25,w:1,
+  text:()=>'連續演出之後，醫生發現你的聲帶長了小結。',
+  c:()=>[['做手術',()=>{if(chance(.8)){d('talent',-4);d('money',-30000);return OK('手術成功')+'你三個月不能說話。重新開口的那天，你哭了。';}d('talent',-15);d('happy',-12);return NG('手術失敗')+'你的高音再也上不去了。';}],
+    ['照樣唱',()=>{d('talent',-10);if(chance(.35)){scandal('現場演出嚴重走音',20);return NG('台上破音')+'你在直播演出中破音，片段被做成了表情包。';}return '你的聲音變得沙啞，有人反而說更有味道。';}]]});
+E({id:'plastic',k:'形象',once:1,if:()=>S.debuted&&S.age<40,w:()=>S.region==='jk'?2.5:.6,
+  text:()=>'公司建議你去做「微調」，說鏡頭前會更上鏡。',
+  c:()=>[['接受',()=>plasticRoll(.7)],['拒絕',()=>'「這張臉是我爸媽給的。」']]});
+function breakup(t){const n=S.love;S.love=null;d('crea',12);d('happy',-6);logk('與'+n+'分手');return t+' 分手之後，你的靈感像決堤一樣湧出來。';}
+function propose(){if(chance(.85)){S.married=true;d('happy',12);d('rel',10);if(S.genre==='pop'||S.region==='jk')mul('fans',.9);logk('與'+S.love+'結婚');return OK('對方答應了')+'你在一場小型演出的安哥時單膝跪下。全場尖叫。';}
+  const n=S.love;S.love=null;d('crea',12);queueCrisis('求婚被拒');return NG('被拒絕')+`${n}沉默了很久，說：「對不起。」`;}
+function comeOut(){
+  S.flags.out=1;d('happy',15);logk('公開出櫃');lockChina();
+  let t='你在社交媒體上寫道：「是的，我愛的人是'+S.love+'。」';
+  if(chance(.55)){boost(1.12);t=OK('獲得廣泛支持')+t+'不少樂迷留言說，你的勇氣幫助了他們。';}
+  else{mul('fans',.9);t=NG('部分粉絲離開')+t+'有一部分粉絲靜靜地取消了關注。';}
+  return t+' 某個擁有十二億人口的龐大市場隨即下架了你的所有作品。';
+}
+function plasticRoll(p){
+  if(chance(p)){boost(S.age>=35?1.5:1.12);if(S.age>=35)ach('不老傳說');
+    return OK('整容成功')+(S.age>=35?`媒體和網民一致驚嘆你「凍齡」，稱你為「不老傳說」。${S.age}歲的你，看起來像二十多歲。`:'效果很自然，粉絲說你「越來越好看」。');}
+  S.flags.plasticFail=1;mul('fans',.65);d('att',-15);d('happy',-15);scandal('整容失敗被群嘲',30,true);logk('整容失敗');
+  return NG('整容失敗')+'消腫之後，你的臉有點僵。網上出現了一大堆對比圖，連老粉絲都說認不出你。';
+}
+E({id:'meltdown',k:'失控',cls:'crisis',cd:3,force:1,
+  if:()=>S.age>=15&&(S.s.happy<=15||(S.oldImage>50&&S.age>=17&&S.s.happy<=35&&chance(.4))),
+  prep:()=>({a:pick(['你在凌晨走進一間理髮店，剃光了自己的頭髮。','你在演唱會唱到一半，丟下咪高峰離場。','你開直播痛罵公司和經理人，足足罵了兩小時。','你失蹤了三天，手機一直關機，經理人急得報了警。','你在頒獎禮上搶走了別人的咪高峰。'])}),
+  text:x=>`你終於崩潰了。你沒有預先告訴任何人，連你自己也控制不了。${x.a}第二天，所有頭條都是你。`,
+  c:x=>{scandal(x.a.replace(/^你/,'').replace(/。$/,''),45);logk('精神崩潰失控');return [
+    ['公開道歉',()=>{d('happy',5);return '道歉信寫得很誠懇，但你不確定自己為甚麼要道歉。';}],
+    ['接受心理治療',()=>{d('happy',30);d('money',-Math.min(Math.max(S.money,0),30000));mul('fans',.95);return '你第一次在一個陌生人面前，把所有事情說了出來。';}],
+    ['不作回應',()=>{d('happy',8);mul('fans',.92);return '你關掉了所有社交媒體。';}]];}});
+E({id:'debt',k:'債務',cls:'crisis',cd:1,force:1,if:()=>S.money<-20000&&S.age>=18,
+  text:()=>`你欠下了 ${cash(-S.money)} 的債務。銀行和財務公司輪流打電話來。`,
+  c:()=>[...borrowChoices(),['變賣資產',()=>{d('money',-S.money*.5);d('happy',-6);return '你賣掉了車和名錶，搬到了一個小單位。';}],
+    ['拚命接商演還債',()=>{d('money',S.fans*.3+50000);d('health',-10);d('crea',-10);d('happy',-10);return '你一年唱了一百場婚宴和開幕禮。';}],
+    S.s.rel>=60?['向朋友求助',()=>{d('rel',-10);if(chance(.7)){d('money',-S.money*.7);return OK('朋友伸出援手')+'幾位圈中好友湊了一筆錢給你周轉。';}return NG('沒有人借錢給你')+'電話打了一圈，大家都說最近手頭緊。';},'人際關係達標']:null,
+    ['宣布破產',()=>{setv('money',0);scandal('宣布破產',40);if(tierIdx()>=2)queueCrisis('破產');logk('宣布破產');return '「歌手破產」成了財經版的頭條。';}]]});
+
+/* --- smoking --- */
+E({id:'smoke',k:'誘惑',once:1,if:()=>S.age>=15&&!S.flags.smoke,w:1.2,
+  text:()=>'後台，一位前輩遞給你一支煙：「唱完一場騷，抽一口最舒服。」',
+  c:()=>[['接過來',()=>{S.flags.smoke=1;d('happy',4);d('health',-3);d('talent',-2);logk('開始吸煙');return '煙霧嗆得你咳了幾聲，但那一刻你確實放鬆了。之後每晚演出後，你都會點一支。';},'快樂略升；健康與唱功下降'],
+    ['拒絕',()=>'你說要保護聲線。']]});
+E({id:'smoke_quit',k:'健康',cd:4,if:()=>S.flags.smoke,w:1.5,
+  text:()=>'醫生說你的聲線因為吸煙變得粗糙，肺部也有陰影。',
+  c:()=>[['戒煙',()=>{if(chance(.5)){S.flags.smoke=0;d('happy',-6);d('health',4);return OK('戒煙成功')+'頭幾個月你脾氣很差，但聲音慢慢回來了。';}d('happy',-3);return NG('戒煙失敗')+'三個星期後，你又在後台點起了煙。';}],
+    ['繼續抽',()=>{d('happy',3);d('health',-4);d('talent',-3);return '你把醫生的報告摺起來，塞進了口袋。';}]]});
+
+/* --- love --- */
+E({id:'love_meet',k:'愛情',cd:3,if:()=>!S.love&&!S.married&&S.age>=18&&S.trainee===0,w:1.6,
+  prep:()=>{const pl=pick([['朋友的生日派對','攝影師'],['健身室','物理治療師'],['朋友的婚禮','建築師'],['音樂錄像拍攝現場','演員'],['唱片公司的慶功宴','唱片監製'],['街角的咖啡店','插畫家'],['一程長途航班上','機師'],['慈善晚會','醫生'],['舞蹈室','舞蹈員'],['書店的簽名會','作家']]);
+    const same=chance(.15),pg=same?S.gender:(S.gender==='m'?'f':'m');
+    return {p:pl[0],j:pl[1],same,pg,n:pick(pg==='f'?['嘉欣','子晴','曉彤','詠琪','Mia','雅文','美咲','Chloe']:['俊希','浩然','翔太','Alex','志軒','Daniel','在賢','Leo'])};},
+  text:x=>`你在${x.p}認識了${x.n}，${x.pg==='f'?'她':'他'}是一位${x.j}。你們很快就無話不談。`,
+  c:x=>[['開始交往',()=>{S.love=x.n;S.loveSame=x.same;S.flags.loveSince=S.age;d('happy',10);d('crea',5);return '你的新歌突然多了很多溫柔的句子。';}],
+    ['專注事業',()=>'你們成了很好的朋友。只是朋友。']]});
+E({id:'ss_rumor',k:'愛情',cd:3,if:()=>S.love&&S.loveSame&&!S.flags.out&&tierIdx()>=2,w:2,
+  text:()=>`網民拿你和${S.love}的合照大做文章，媒體連日炒作你的性取向。`,
+  c:()=>[['公開出櫃',()=>comeOut(),'坦然面對，但會失去某個龐大市場'],
+    ['否認',()=>{d('happy',-12);d('rel',-3);return `你說你們只是好朋友。說完之後，你很久沒有見${S.love}。`;}],
+    ['不回應',()=>{d('happy',-8);return '炒作持續了一整個月，你每天出門都被記者追問。';}]]});
+E({id:'paparazzi',k:'狗仔隊',cd:2,if:()=>S.love&&tierIdx()>=3&&S.flags.papFor!==S.love,w:2,
+  text:()=>{S.flags.papFor=S.love;return `狗仔隊拍到你和${S.love}深夜一同回家。`;},
+  c:()=>[['大方承認',()=>{if(S.loveSame&&!S.flags.out)return comeOut();const idol=S.genre==='pop'||S.region==='jk';if(idol&&chance(.5)){mul('fans',.8);return NG('粉絲脫粉')+'偶像戀愛觸動了不少粉絲的底線，粉絲數一夜大跌。';}d('happy',4);return OK('獲得祝福')+'大部分粉絲都送上祝福。';}],
+    ['否認',()=>{if(chance(.4)){scandal('否認戀情被揭穿',30);return NG('被揭穿')+'一個月後，狗仔隊放出了更多照片。你的否認成了笑話。';}return OK('瞞過去了')+'風頭漸漸過去了。';}],
+    ['分手保事業',()=>breakup(`你對${S.love}說，等你不那麼忙的時候再說吧。對方沒有回頭。`)]]});
+E({id:'love_break',k:'愛情',cls:'crisis',cd:2,if:()=>S.love&&!S.married&&S.age>=(S.flags.loveSince||0)+1,w:()=>S.s.happy<40||tierIdx()>=4?1.6:.8,
+  text:()=>`${S.love}說：「你愛的始終是舞台，不是我。」`,
+  c:()=>[['拼命挽留',()=>{if(chance(.45)){d('happy',-4);return OK('成功挽留')+'你推掉了一整個月的工作陪對方。這一次，對方留了下來。';}queueCrisis('失去愛情');return NG('挽留失敗')+breakup('門還是關上了。');}],
+    ['放手',()=>{queueCrisis('失去愛情');return NG('分手')+breakup('你幫對方把行李搬上了的士。');}]]});
+E({id:'love_status',k:'愛情',cd:3,if:()=>S.love&&!S.married&&S.age>=(S.flags.loveSince||0)+2,w:1.8,
+  text:()=>`你和${S.love}在一起已經${S.age-S.flags.loveSince}年了。`,
+  c:()=>[['求婚',()=>propose()],
+    ['提出分手',()=>breakup(`你約${S.love}在海邊見面，說了分手。`),'靈感上升，快樂下降'],
+    ['順其自然',()=>{d('happy',2);return '你們誰也沒有提起未來。';}]]});
+E({id:'marriage_trouble',k:'婚姻',cd:5,if:()=>S.married&&S.love,w:1.2,
+  text:()=>`你長年在外巡迴，和${S.love}的話越來越少。有一晚，對方問你：「我們還要這樣下去嗎？」`,
+  c:()=>[['推掉工作，修補關係',()=>{mul('fans',.95);d('happy',8);d('rel',4);return '你們去了一趟沒有網絡的旅行。回來之後，你們又開始一起吃早餐。';}],
+    ['離婚',()=>{S.married=false;d('money',-Math.max(0,S.money)*.3);d('happy',-10);scandal('離婚',20,true);return breakup('你們簽了離婚協議。');},'靈感上升，要分一半身家']]});
+
+/* --- scandal & conflict --- */
+E({id:'old_post',trouble:1,k:'醜聞',once:1,if:()=>S.debuted&&tierIdx()>=2,w:1,
+  text:()=>'網民翻出你十幾歲時發過的冒犯性帖文，要求你道歉。',
+  c:()=>[['誠懇道歉',()=>{if(chance(.7))return OK('風波平息')+'大部分人接受了你的道歉。';scandal('舊帖文冒犯言論',25);return NG('越描越黑')+'道歉被批「毫無誠意」。';}],
+    ['說是被盜號',()=>{if(chance(.5)){scandal('發表冒犯言論後謊稱被盜號',40);return NG('謊言被拆穿')+'有人找到了你當年用同一帳號發的其他帖文。';}return OK('不了了之')+'事件慢慢淡出。';}],
+    ['不回應',()=>{scandal('舊帖文冒犯言論',25);return '話題在網上燒了一個星期。';}]]});
+E({id:'blackhist',k:'黑歷史',once:1,if:()=>S.flags.uploadedYoung&&tierIdx()>=3,w:2,
+  text:()=>'有人翻出你十二三歲時上傳的翻唱影片，變聲期的高音令全網笑翻。',
+  c:()=>[['自嘲重唱一次',()=>{boost(1.12);return OK('全網好評')+'你用現在的聲音重唱了同一首歌，對比片段播放量破千萬。';}],
+    ['要求平台刪片',()=>{mul('fans',.97);return NG('越刪越多')+'刪了一條，網上冒出了一百條。';}]]});
+E({id:'fight',k:'衝突',cd:5,if:()=>S.debuted&&S.age>=18&&S.jail===0,w:()=>S.genre==='rap'?1.6:S.genre==='rock'?1.2:.5,
+  prep:()=>({i:S.age<30&&S.att>=40?pick(['說你「靠樣出位」','說你的歌「難聽到爆」','說你「紅不過三年」']):'嘲笑你「過氣」'}),
+  text:x=>`在酒吧，有人推了你的朋友一把，還${x.i}。`,
+  c:()=>[['動手',()=>{ach('樂壇壞孩子');
+      if(chance(.45)){
+        if((S.manager==='major'||S.s.rel>=75)&&chance(.65)){d('money',-80000);scandal('酒吧打架',30);return OK(S.manager==='major'?'公司擺平了':'人脈擺平了')+'律師團連夜與對方和解。第二天你在記者會上鞠躬道歉，免去了牢獄之災。';}
+        return NG('入獄一年')+'對方傷勢不輕，你被判傷人罪成。'+startJail(1,'酒吧打架傷人入獄');}
+      d('money',-20000);scandal('酒吧打架',25);return OK('和解收場')+'你賠了一筆醫藥費，事件沒有鬧上法庭。';}],
+    ['轉身離開',()=>{d('happy',-5);return '你拉著朋友離開。背後傳來一陣噓聲。';}]]});
+E({id:'tailed',k:'名氣',cd:2,if:()=>tierIdx()>=4,w:()=>tierIdx()>=5?2.5:1.5,
+  prep:()=>({t:pick(['狗仔隊二十四小時守在你家樓下，連你去便利店都被拍到登上頭條。','一群粉絲在機場圍堵你，你被推倒在地上。','你在餐廳吃飯，鄰桌的人一直舉著手機對著你拍。'])}),
+  text:x=>x.t,
+  c:()=>[['戴上口罩，盡量少出門',()=>{d('happy',-8);return '你家的窗簾已經半年沒有拉開過。';}],
+    ['請保鑣隨行',()=>{d('money',-60000);d('happy',-4);return '你出入都有兩個保鑣陪同，連朋友都不太敢約你了。';}],
+    ['公開呼籲尊重私隱',()=>{if(chance(.5)){d('happy',-2);return OK('情況改善')+'大部分粉絲響應了你的呼籲。';}d('happy',-10);d('att',3);return NG('適得其反')+'呼籲本身又成了新聞。';}]]});
+E({id:'auto_retire',k:'失控',cls:'crisis',once:1,force:1,if:()=>(S.vlowH||0)>=3&&S.debuted,
+  prep:()=>({t:pick(['演唱會唱到一半，你放下咪高峰，對著台下說：「這是我最後一場演出。」然後轉身走進後台，再也沒有出來。','凌晨三點，你在社交媒體上發了一句：「我退出了。」然後刪除了所有帳號。經理人第二天早上才從新聞上知道。'])}),
+  text:x=>`你已經三年沒有感受過快樂。這一次，沒有人來得及阻止你。${x.t}`,
+  c:()=>[['……',()=>{finish('retire');S.flags.autoRetire=1;return '你終於自由了。';}]]});
+E({id:'inner_voice',k:'心聲',cls:'crisis',cd:1,force:1,if:()=>S.lowH>=2&&S.debuted,
+  prep:()=>({t:pick(['我想引退了。','我覺得自己只是一件商品，被擺上貨架，任人挑選。','我很想拋下一切，去看看這個世界。','我只想感受一個平凡的日子：睡到自然醒，去街市買菜，沒有人認得我。'])}),
+  text:x=>`你已經${S.lowH}年沒有真正快樂過了。深夜，你在日記裡寫下：「${x.t}」`,
+  c:()=>[['放下工作，休息一年',()=>{d('happy',22);d('att',-6);mul('fans',.95);S.lowH=0;return '你推掉了所有通告。這是很多年來，你第一次睡到自然醒。';}],
+    ['把感受寫成歌',()=>{d('crea',10);d('happy',6);return '你把日記改成了歌詞。';}],
+    ['繼續工作',()=>{d('happy',-5);return '你合上日記，第二天照樣出門開工。';}],
+    S.lowH>=4?['宣布引退',()=>{finish('retire');return '你終於說出了那句話：「我想做回一個普通人。」';}]:null]});
+E({id:'plagiarism',trouble:1,k:'官司',once:1,if:()=>S.releases.length>=2&&S.debuted,w:1,
+  text:()=>'一位不知名的作曲人指控你的熱門歌曲抄襲他的作品。',
+  c:()=>[['和解賠錢',()=>{d('money',-Math.max(0,S.money)*.15);d('happy',-5);return '你們在律師樓簽了保密協議。';}],
+    ['打官司',()=>{queueCrisis('抄襲官司');if(chance(.55)){d('money',-Math.max(0,S.money)*.05);return OK('勝訴')+'法官裁定兩首歌只是「巧合地相似」。但這兩年你被罵得很慘。';}d('money',-Math.max(0,S.money)*.3);scandal('抄襲官司敗訴',45);return NG('敗訴')+'那首歌從此掛上了「抄襲」兩個字。';}]]});
+E({id:'stalker',k:'私生飯',cd:5,if:()=>tierIdx()>=3,w:()=>S.region==='jk'?2:.8,
+  text:()=>'有私生飯一直跟蹤你，甚至闖進了你入住的酒店樓層。',
+  c:()=>[['報警',()=>{d('happy',-6);return '對方被拘捕了，但你每次開門前都會先看一看貓眼。';}],
+    ['搬家並加強保安',()=>{d('money',-50000);d('happy',-3);return '你搬進了一棟有三重保安的大廈。';}],
+    ['隱忍',()=>{d('happy',-14);return '你開始失眠。';}]]});
+E({id:'cyberbully',trouble:1,k:'網絡',cd:3,if:()=>S.debuted,w:1.3,
+  text:()=>'你的新專輯被網民惡搞成「年度最難聽」，留言區每天湧入上千條惡評。',
+  c:()=>[['關掉手機',()=>{d('happy',-4);return '你刪除了所有社交媒體程式。';}],
+    ['逐條回覆',()=>{d('happy',-14);if(chance(.3)){boost(1.06);return OK('罵出熱度')+'罵戰意外令專輯重回榜單。';}mul('fans',.95);return NG('越罵越多人看你不順眼')+'';}],
+    ['自嘲玩梗',()=>{if(chance(.55)){boost(1.1);d('happy',4);return OK('玩梗成功')+'你自己剪了一條惡搞影片，網民反過來說你「好有幽默感」。';}d('happy',-6);return NG('玩梗失敗')+'網民說你「硬食」。';}]]});
+
+/* --- opportunities --- */
+E({id:'endorse',k:'代言',cd:2,if:()=>tierIdx()>=3,w:1.6,
+  prep:()=>({b:pick(['國際運動品牌','高級手錶品牌','奢侈時裝品牌','汽水品牌','智能手機品牌'])}),
+  text:x=>`${x.b}邀請你擔任代言人，酬勞相當可觀。`,
+  c:()=>[['接受',()=>{d('money',S.fans*.15+50000);d('crea',-4);boost(1.03);return '你的巨型廣告掛在了市中心最大的屏幕上。';}],
+    ['拒絕，保持形象',()=>'「我只想好好唱歌。」']]});
+E({id:'film_offer',k:'跨界',cd:5,if:()=>tierIdx()>=3,w:1,
+  text:()=>'一位導演邀請你主演他的新電影。',
+  c:()=>[['接拍',()=>{d('money',80000+S.fans*.03);d('crea',-6);d('happy',-6);if(chance(.6)){boost(1.12);return OK('票房大收')+'影評說你「比想像中會演」。';}mul('fans',.95);return NG('淪為爛片')+'電影上映一星期就落畫，你的演技成了網上笑話。';}],
+    ['婉拒',()=>'你說自己只懂唱歌。']]});
+E({id:'solo_offer',k:'樂隊',once:1,if:()=>S.band&&S.band.active&&S.fans>=3e5,w:2,
+  text:()=>'唱片公司的高層私下約你吃飯：「我們只想簽你一個。」',
+  c:()=>[['單飛發展',()=>{S.flags.soloFans=S.fans;S.band.active=false;S.band.m.forEach((m,i)=>baff(i,-40));logk('離開樂隊單飛');
+      if(chance(.5)){boost(1.15);return OK('單飛成功')+'你的首張個人專輯一推出就登上榜首。前隊友在社交媒體上只寫了一句：「祝你好運。」';}
+      mul('fans',.65);scandal('單飛後與前隊友鬧翻',25,true);return NG('樂迷不買賬')+'大部分樂迷選擇站在樂隊那一邊。';}],
+    ['留在樂隊',()=>{S.band.m.forEach((m,i)=>baff(i,10));return '你把這件事告訴了隊友。那晚大家喝到天亮。';}]]});
+E({id:'feat_new',k:'經理人',cd:3,if:()=>S.debuted,w:.8,
+  text:()=>'經理人建議你和一位正當紅的新人合作，說可以吸引年輕粉絲。',
+  c:()=>[['合作',()=>{d('crea',-3);if(chance(.6)){boost(1.1);return OK('合作大熱')+'合作歌曲在短片平台上被用了幾百萬次。';}return NG('反應平平')+'歌曲沒有引起甚麼迴響。';}],
+    ['拒絕',()=>'「我的歌不需要蹭熱度。」']]});
+E({id:'feat_big',k:'合作',cd:4,if:()=>S.debuted&&tierIdx()>=2&&tierIdx()<=4,w:1.3,
+  text:()=>'一位天王級前輩邀請你在新歌中合唱。',
+  c:()=>[['合作',()=>{boost(1.25);d('talent',2);d('rel',6);return '錄音完畢，前輩拍拍你的肩膀：「下一個就是你。」';}],
+    ['婉拒',()=>'你說自己還未準備好。']]});
+E({id:'festival',k:'音樂節',cd:3,if:()=>S.debuted&&tierIdx()>=2,w:()=>S.region==='west'?2:1,
+  prep:()=>({f:pick(rf().fests)}),
+  text:x=>`${x.f}邀請你參與演出。${tierIdx()>=4?'這次是壓軸頭牌。':''}`,
+  c:()=>[['全力以赴',()=>{d('talent',3);boost(1.1);d('health',-4);if(tierIdx()>=4&&S.region==='west'&&S.genre==='rock')ms('oasis','擔任音樂節頭牌，被小報形容為新一代 綠洲兄弟');
+      if(chance(.15)){mul('fans',.95);return NG('技術故障')+'演出中途停電十五分鐘，你在黑暗中清唱，但觀眾已經散了一半。';}return OK('全場沸騰')+'十萬人在泥地上和你一起跳。';}],
+    ['推掉休息',()=>{d('happy',5);return '你在家裡看了直播。';}]]});
+E({id:'variety',k:'節目邀請',cd:2,if:()=>S.debuted,w:()=>S.region==='jk'?2:S.region==='gc'?1.6:.8,
+  prep:()=>({t:pick(['fun','talk','music'])}),
+  text:x=>x.t==='fun'?'一個人氣搞笑綜藝節目邀請你當嘉賓，要玩懲罰遊戲。':x.t==='talk'?'一個深度訪談節目邀請你上節目，主持人以挖掘嘉賓的成長經歷見稱。':'一個電視音樂節目邀請你現場演出，還要和其他歌手即場合作。',
+  c:x=>x.t==='fun'?[['參加',()=>{d('money',30000);d('crea',-4);if(chance(.3)){d('health',-8);d('talent',-4);d('att',6);return NG('誤食大量芥末')+'懲罰遊戲中你吞下了一整湯匙芥末，喉嚨灼傷了兩個星期。片段倒是在網上瘋傳。';}boost(1.1);return OK('收視大熱')+'你在節目裡學狗叫，收視率創新高。';},'關注度上升，可能有意外'],['婉拒',()=>'你說自己不太會搞笑。']]
+   :x.t==='talk'?[['分享成長經歷',()=>{d('att',6);if(chance(.5)){d('rel',8);d('happy',6);return OK('感動全城')+'你談到家人時哭了。節目播出後，父母第一次打電話說以你為榮。';}d('rel',-10);d('happy',-6);return NG('家人不滿')+'你在節目中提到家裡的往事，家人覺得你把私事拿出來消費。';},'可能影響人際關係'],['只談音樂',()=>{d('att',3);return '訪問很平穩，沒有甚麼話題，但也沒有出錯。';}],['婉拒',()=>'你不習慣在鏡頭前談自己。']]
+   :[['參加',()=>{d('crea',8);d('talent',3);d('att',5);if(chance(.3)){boost(1.1);return OK('即場合作成經典')+'你和另一位歌手即興合唱的片段，被樂迷稱為「年度最佳現場」。';}return '和其他音樂人交流，讓你有了新的靈感。';},'靈感上升'],['婉拒',()=>'你說檔期排不開。']]});
+E({id:'judge',k:'機會',once:1,if:()=>S.age>=35&&tierIdx()>=3,w:1.5,
+  text:()=>'一個選秀節目邀請你擔任評審。',
+  c:()=>[['擔任評審',()=>{d('money',150000);boost(1.1);return '你的毒舌點評成了網絡金句。';}],
+    ['婉拒',()=>'你說自己沒有資格評判別人的夢想。']]});
+E({id:'film_theme',k:'機會',cd:8,if:()=>S.debuted&&S.age>=28,w:1,
+  text:()=>'一位著名導演聽過你的舊作，邀請你為他的新電影寫主題曲。',
+  c:()=>[['接受',()=>{d('crea',-4);S.flags.filmBonus=1;d('sediment',5);boost(1.05);return '你看了三次粗剪，寫出了一首讓導演沉默良久的歌。下一張專輯會因此加分。';}],
+    ['婉拒',()=>'你正專注自己的專輯。']]});
+E({id:'late_bloom',k:'翻紅',once:1,force:()=>chance(.01+(S.sediment-60)/2500),if:()=>S.debuted&&S.age>=30&&S.age<=55&&tierIdx()<=3&&S.sediment>=60&&!S.lateBloom,
+  prep:()=>{const r=[...S.releases].sort((a,b)=>b.q-a.q)[0];return {t:r?r.title:'無名之歌',a:r?r.age:S.age};},
+  text:x=>`一段你多年前的現場演出影片突然在網上瘋傳。你${x.a}歲時發表、當年無人問津的專輯《${x.t}》，衝上了串流榜首。`,
+  c:()=>{S.lateBloom=true;S.fans=Math.round(S.fans*RI(4,8)+1200000);S.att=clamp(S.att+45,0,100);ach('大器晚成');logk('舊作翻紅，大器晚成');return [
+    ['趁勢推出新專輯',()=>{S.rebirth=Math.max(S.rebirth,10);return '經理人的電話響個不停。這一次，輪到你挑選工作。';}],
+    ['開一場感恩演唱會',()=>{d('money',S.fans*.2);d('happy',8);return '你在台上說：「謝謝你們，遲到了這麼多年。」';}]];}});
+E({id:'fan_letter',k:'樂迷',cd:8,if:()=>S.debuted&&tierIdx()>=2,w:.35,
+  text:()=>'你收到一封樂迷來信：「你的歌陪我走過了人生最難熬的一年。」信末附上了寄信人的地址。',
+  c:()=>[['親筆回信',()=>{if(chance(.35)){d('happy',-18);d('health',-6);return NG('惹上瘋狂粉絲')+'對方之後每天寄三封信，還開始在你家樓下等你。有一晚，你發現門鎖被人撬過。';}d('happy',8);return OK('溫暖的回音')+'對方回信說，會一直支持你。';}],
+    ['把信貼在錄音室牆上',()=>{d('happy',4);d('crea',4);return '每次寫不出歌的時候，你都會讀一遍。';}]]});
+E({id:'busk',k:'回憶',once:1,if:()=>tierIdx()>=4,w:.7,
+  text:()=>'你戴上帽子和口罩，回到出道前賣唱的街頭，自彈自唱了一小時。',
+  c:()=>[['摘下口罩',()=>{boost(1.04);return '有人認出了你。半小時後，街上聚集了上千人一起合唱。';}],
+    ['靜靜唱完就走',()=>{d('happy',10);return '沒有人認出你。帽子裡只有十幾個硬幣，你卻笑了。';}]]});
+E({id:'newcomer',k:'樂壇',cd:3,if:()=>S.debuted&&tierIdx()>=2,w:()=>S.age>ageCap()?2.4:1.1,
+  prep:()=>({n:pick(ROOKIES[S.region])}),
+  text:x=>`新人${x.n}橫空出世，風格和你極為相似。媒體稱之為「${S.name}接班人」。`,
+  c:()=>[['推出新專輯正面迎戰',()=>{d('happy',-8);S.q.unshift((S.peakTier>=5&&S.age>=50)?retroCard():releaseCard(false));return '你提早回到錄音室。';}],
+    ['與新人合作',()=>{d('rel',5);if(chance(.45)){boost(1.1);return OK('雙贏')+'合作歌曲讓你接觸到一整代新樂迷。';}mul('fans',.8);return NG('光環被搶走')+'樂評說你是「為新人抬轎」，不少粉絲轉投對方。';}],
+    ['不理會',()=>{mul('fans',R(.6,.78));d('att',-12);d('happy',-6);return NG('粉絲大量流失')+'你的粉絲有不少轉投了新人。';}]]});
+E({id:'sink_low',k:'低潮',once:1,if:()=>S.sink>=2&&S.age>=30,w:2,
+  text:()=>'已經很久沒有人找你演出了。你看著手機，猶豫要不要回覆那個「懷舊金曲夜」的邀請。',
+  c:()=>[['接受',()=>{d('money',30000);boost(1.05);d('happy',-3);return '台下的觀眾跟著你唱十年前的歌，沒有人知道你的新歌。';}],
+    ['拒絕',()=>{d('happy',-5);return '你寧願不被記得，也不想被這樣記得。';}],
+    ['宣布退出樂壇',()=>{finish('retire');return '你發了一條很短的帖文。轉發的人不多。';}]]});
+E({id:'award',k:'頒獎禮',cd:1,force:1,if:()=>S.flags.awardCand&&S.debuted,
+  text:()=>`你憑年度專輯入圍${rf().award}。`,
+  c:()=>{const q=S.flags.awardCand;S.flags.awardCand=0;
+    const win=chance(clamp((q-60)/40*.7+.05,.05,.9));
+    const res=t=>{if(win){S.awards++;boost(1.06);d('att',4);d('happy',6);ms('aw1','首次奪得'+rf().award);logk('奪得'+rf().award);return OK('得獎')+t;}d('happy',-4);return NG('落敗')+'頒獎嘉賓唸出的是另一個名字。'+t;};
+    const o=[['出席並準備致辭',()=>res(win?'你在台上感謝了家人，台下有人在哭。':'你帶頭為得獎者鼓掌。')],
+      ['缺席',()=>res('你在家裡看直播。')]];
+    if(S.region==='gc'&&!S.chinaLocked)o.push(['在台上意有所指地說一句話',()=>{const t=res('');if(win){if(chance(.7)){lockChina();return t+' '+NG('遭到封殺')+'你在得獎感言最後說了一句意味深長的話。第二天，你的名字從某個龐大市場的所有平台上消失了。';}return t+' '+OK('出奇地沒事')+'那句話被解讀成好幾個版本，竟然沒有人追究。';}return t+' 幸好你沒有機會上台。';},'會有甚麼後果？']);
+    return o;}});
+
+/* --- comebacks after fading --- */
+E({id:'cb_plastic',k:'復出',once:1,if:()=>faded()&&S.age>=32,w:2.2,
+  text:()=>'經理人遞上一張整形醫生的名片：「以全新面貌復出，媒體一定會報道。」',
+  c:()=>[['接受',()=>plasticRoll(.55),'成功便是「不老傳說」；失敗會更慘'],['拒絕',()=>'「我想用歌聲復出，不是用臉。」']]});
+E({id:'cb_contest',k:'復出',once:1,if:()=>faded(),w:2.2,
+  text:()=>'一個歌手比賽節目邀請一群過氣歌手參賽，主打「重返巔峰」。',
+  c:()=>[['參賽',()=>{d('happy',-10);if(chance(clamp(S.s.talent/110,.15,.85))){boost(2);ach('重返巔峰');logk('憑歌手比賽節目翻紅');return OK('奪得總冠軍')+'決賽那晚，你唱出了二十歲時唱不到的高音。全城熱議。';}mul('fans',.85);return NG('首輪淘汰')+'評審說你「已經跟不上時代」。';}],
+    ['婉拒',()=>'你說自己不需要被比較。']]});
+E({id:'cb_nostalgia',k:'復出',cd:5,if:()=>faded(),w:1.6,
+  text:()=>'主辦方邀請你舉行一場懷舊金曲演唱會。',
+  c:()=>[['答應',()=>{d('money',S.peakFans*.05+30000);if(chance(.6)){boost(1.2);return OK('門票秒殺')+'一代人帶著自己的孩子來聽你唱歌。';}return NG('入座率不足一半')+'你對著半空的座位唱完了整場。';}],
+    ['拒絕',()=>'你不想只活在過去。']]});
+E({id:'cb_memoir',k:'復出',once:1,if:()=>faded()&&S.age>=35,w:1.4,
+  text:()=>'出版社邀請你寫自傳。編輯暗示：「寫得越大膽，賣得越好。」',
+  c:()=>[['大爆樂壇內幕',()=>{if(chance(.6)){boost(1.35);d('money',150000);return OK('自傳大賣')+'書中的內幕被各大媒體連載了一個月。';}scandal('自傳內容被指造謠',40);return NG('惹上官司')+'書中提到的人一個接一個入稟告你誹謗。';}],
+    ['溫和地回憶一生',()=>{d('money',50000);d('happy',8);return '書賣得一般，但你寫完最後一頁時覺得很平靜。';}]]});
+E({id:'cb_hype',k:'復出',once:1,if:()=>faded(),w:1.4,
+  text:()=>'經理人提議：「不如炒作一段假緋聞，先讓大家記起你。」',
+  c:()=>[['照做',()=>{if(chance(.5)){boost(1.4);return OK('重回頭條')+'你的名字連續一星期霸佔娛樂版。';}scandal('炒作假緋聞被揭穿',45);return NG('被揭穿')+'對方的經理人公開了你們的「合作合約」。';}],
+    ['拒絕',()=>'你寧願被遺忘。']]});
+E({id:'cb_meme',k:'翻紅',once:1,if:()=>faded(),w:1.2,
+  text:()=>'你年輕時一段誇張的舞台片段被年輕人做成迷因，在短片平台瘋傳。',
+  c:()=>[['親自下場玩梗',()=>{if(chance(.65)){boost(1.5);return OK('翻紅')+'你模仿自己當年的動作，影片播放量破億。';}return NG('被說太刻意')+'年輕人說你「硬蹭」。';}],
+    ['裝作不知道',()=>{boost(1.1);return '迷因熱潮過了一個月就淡了。';}]]});
+
+/* --- 1.2 billion easter egg --- */
+E({id:'market_q',k:'訪問',cd:4,if:()=>S.debuted&&tierIdx()>=2&&!S.chinaLocked,w:()=>S.region==='gc'?2.5:.7,
+  text:()=>'訪問進行到一半，記者突然問了一個關於「某個擁有十二億人口的龐大市場」的敏感問題。全場鴉雀無聲。',
+  c:()=>[['說出真心話',()=>{if(chance(.7)){lockChina();d('happy',-8);return NG('遭到封殺')+'片段在網上瘋傳。一夜之間，你的歌從某個龐大市場的所有平台上消失了。';}return OK('出奇地沒事')+'片段在網上轉了一圈，竟然沒有引起任何反應。你鬆了一口氣。';}],
+    ['打太極',()=>'你笑著說：「我只是一個唱歌的人。」記者沒有再追問。'],
+    ['高調表態，擁抱市場',()=>{d('money',100000);if(chance(.5)){boost(S.region==='gc'?1.15:1.03);return OK('市場歡迎')+'十二億人中有不少人替你按讚。';}scandal('表態引起本地樂迷不滿',30);return NG('本地樂迷脫粉')+'本地有大批樂迷宣布脫粉。';}]]});
+E({id:'market_post',k:'社交媒體',once:1,if:()=>S.debuted&&tierIdx()>=3&&!S.chinaLocked,w:()=>S.region==='gc'?1.5:.4,
+  text:()=>'你在社交媒體上載了一張旅行照，背景裡有一面旗幟。數小時後，留言區被洗版。',
+  c:()=>[['刪帖道歉',()=>{mul('fans',.95);return '道歉聲明的措辭被逐字分析了一個星期。';}],
+    ['堅持不刪',()=>{if(chance(.8)){lockChina();return NG('遭到封殺')+'你的帳號在某個龐大市場被封了。本地樂迷倒是覺得你很有骨氣。';}return OK('出奇地沒事')+'風波兩天後就被另一單新聞蓋過了。';}]]});
+E({id:'market_show',k:'邀請',cd:3,if:()=>S.region==='gc'&&!S.chinaLocked&&tierIdx()>=3,w:1.5,
+  text:()=>'某個龐大市場的大型綜藝節目以天價邀請你參加。',
+  c:()=>[['參加',()=>{d('money',S.fans*.3+200000);boost(1.15);d('crea',-5);return '一集的酬勞，比你一整年的專輯版稅還多。';}],
+    ['婉拒',()=>'你說檔期排不開。']]});
+E({id:'gc_night',k:'商演',cd:3,if:()=>S.region==='gc'&&S.debuted&&tierIdx()<=3,w:1.2,
+  text:()=>'一個夜場老闆以高價邀請你登台，但場內龍蛇混雜。',
+  c:()=>[['接',()=>{d('money',40000);if(chance(.25)){scandal('夜場商演被拍到與江湖人物同枱',30);return NG('被拍到')+'周刊拍到你和幾個江湖人物同枱飲酒。';}return OK('平安無事')+'你唱完三首歌就說要趕下一場。';}],
+    ['不接',()=>'你說檔期滿了。']]});
+E({id:'jk_kohaku',k:'年末特輯',cd:2,if:()=>S.region==='jk'&&tierIdx()>=3,w:1.5,
+  text:()=>'你獲邀登上年末歌合戰，全國家庭都會守在電視機前。',
+  c:()=>[['全力演出',()=>{d('happy',-5);if(chance(.8)){boost(1.12);ms('kohaku','登上年末歌合戰舞台');return OK('全國轟動')+'第二天，你的專輯在各大唱片店賣斷貨。';}mul('fans',.95);return NG('現場失誤')+'你在直播中忘詞，全國觀眾都看到了。';}],
+    ['婉拒',()=>'你說想陪家人過年。']]});
+E({id:'halftime',k:'舞台',once:1,if:()=>S.home==='us'&&tierIdx()>=5,w:3,
+  text:()=>'你獲邀在全國美式足球總決賽擔任中場表演嘉賓。',
+  c:()=>[['全力演出',()=>{boost(1.2);d('health',-5);ms('halftime','登上總決賽中場表演舞台，全國過億人收看');return OK('全國矚目')+'十三分鐘，一億人。你做到了。';}],
+    ['婉拒',()=>'你說自己不太懂美式足球。']]});
+E({id:'tabloid',k:'小報',cd:3,if:()=>S.region==='west'&&tierIdx()>=2,w:1.8,
+  text:()=>'小報頭版用了你醉醺醺走出酒吧的照片，標題是「墮落天才」。',
+  c:()=>[['發表聲明',()=>{d('happy',-4);return '聲明只有一行字：「那天是我生日。」';}],
+    ['隨它去',()=>{if(chance(.5)){boost(1.05);return OK('銷量反升')+'越罵越多人聽你的歌。';}mul('fans',.93);return NG('形象受損')+'品牌開始和你保持距離。';}]]});
+
+/* --- genre: rap --- */
+E({id:'rap_studio',k:'兄弟',once:1,if:()=>S.bro&&S.age>=14&&S.age<=19,w:5,
+  text:()=>`舊區的兄弟${S.bro.n}在車房裡搭了一個簡陋的錄音室：「兄弟，你的歌我包了，不收錢。」`,
+  c:()=>[['接受',()=>{d('crea',6);d('talent',3);bro(15);S.flags.broDebt=1;return '你們在那間漏水的車房裡錄了一整年。';}],
+    ['婉拒',()=>{bro(-10);return `${S.bro.n}聳聳肩：「隨你。」`;}]]});
+E({id:'rap_cut',k:'兄弟',once:1,if:()=>S.bro&&S.flags.broDebt&&S.debuted&&tierIdx()>=3,w:4,
+  text:()=>`你紅了。${S.bro.n}找上門：「當年那間錄音室，你不是忘了吧？我要分一份。」`,
+  c:()=>[['分他一成收入',()=>{d('money',-Math.max(0,S.money)*.1);bro(20);return '他抱了你一下：「我就知道你不會忘本。」';}],
+    ['給他一筆過酬金',()=>{d('money',-50000);bro(-5);return '他收下了錢，但沒有說謝謝。';}],
+    ['拒絕',()=>{bro(-30);d('happy',-6);return '他走的時候撞翻了門口的椅子。';}]]});
+E({id:'rap_diss',k:'Diss戰',cd:3,if:()=>S.genre==='rap'&&S.debuted,w:2,
+  text:()=>'一位對手 rapper 發表 diss 歌曲，逐句嘲諷你「背叛街頭」。',
+  c:()=>[['寫歌回擊',()=>{d('crea',4);d('rel',-4);d('happy',-6);if(chance(.5)){boost(1.15);return OK('贏了這場戰爭')+'你的回擊歌一出，對方連夜刪帖。';}mul('fans',.9);return NG('輸了')+'你的回擊被評為「太軟」，對手乘勝追擊。';}],
+    ['不予理會',()=>{mul('fans',.97);return '「我沒時間跟他玩。」';}]]});
+E({id:'rap_bro_beef',k:'兄弟反目',cls:'crisis',cd:3,if:()=>S.bro&&S.bro.t<30&&S.debuted,w:3,
+  text:()=>`${S.bro.n}在網上公開罵你忘本，還說要「找你算賬」。`,
+  c:()=>[['約他出來談',()=>{
+      if(S.bro.t<12&&chance(.12)){die(`${S.age}歲那年，你和昔日兄弟在舊區談判時爆發衝突，你身受重傷，送院後不治。`,'violence');return NG('悲劇')+'你們吵了起來。混亂之中，有人拔出了武器。';}
+      if(chance(.35)){d('health',-30);scandal('與舊兄弟爆發衝突受傷',35,true);queueCrisis('兄弟反目');logk('與兄弟衝突受傷');return NG('受傷入院')+'談判變成了打鬥。你被送進醫院，縫了二十多針。';}
+      bro(25);return OK('冰釋前嫌')+'你們在舊區的球場坐到天亮，把話說開了。';}],
+    ['報警',()=>{bro(-20);d('happy',-8);return '警方警告了他。從此你出門都帶著保鑣。';}],
+    ['給錢了事',()=>{d('money',-100000);bro(15);return '他收下錢，暫時安靜了。';}]]});
+E({id:'rap_main',k:'轉型',once:1,if:()=>S.genre==='rap'&&S.debuted&&tierIdx()>=2,w:2,
+  text:()=>'主流唱片公司要你把歌詞「洗乾淨」，走流行說唱路線。',
+  c:()=>[['轉型主流',()=>{bro(-10);if(chance(.65)){boost(1.25);return OK('打入主流')+'你的歌開始在商場播放。舊區的人說你「軟了」。';}mul('fans',.85);return NG('兩邊不討好')+'主流聽眾不買賬，街頭樂迷也離你而去。';}],
+    ['堅持街頭',()=>{d('sediment',10);return '你的歌仍然只在地下流傳，但每一句都是真的。';}]]});
+
+/* --- genre: rock band --- */
+E({id:'band_dir',k:'樂隊',cd:2,if:()=>S.band&&S.band.active&&(S.debuted||S.age>=15),w:3,
+  prep:()=>{const i=[0,1,2].sort(()=>rnd()-.5);return {a:i[0],b:i[1]};},
+  text:x=>`${S.band.m[x.a].r}${S.band.m[x.a].n}想走更商業的路線，${S.band.m[x.b].r}${S.band.m[x.b].n}卻堅持要做實驗性的長篇作品。排練室裡吵得不可開交。`,
+  c:x=>[[`支持${S.band.m[x.a].n}`,()=>{baff(x.a,12);baff(x.b,-15);return `${S.band.m[x.b].n}摔門而去，三天沒有來排練。`;}],
+    [`支持${S.band.m[x.b].n}`,()=>{baff(x.b,12);baff(x.a,-15);d('crea',4);return `${S.band.m[x.a].n}冷笑：「好啊，那就一起餓死吧。」`;}],
+    ['寫一首折衷的歌',()=>{baff(x.a,-3);baff(x.b,-3);d('crea',-4);d('happy',-6);return '歌寫好了，但沒有人真正滿意。';}]]});
+E({id:'band_love',k:'樂隊',once:1,if:()=>S.band&&S.band.active,w:1,
+  prep:()=>{const i=[0,1,2].sort(()=>rnd()-.5);return {a:i[0],b:i[1]};},
+  text:x=>`${S.band.m[x.a].r}${S.band.m[x.a].n}開始和${S.band.m[x.b].r}${S.band.m[x.b].n}的前度交往，兩人在後台大打出手。`,
+  c:x=>[[`站在${S.band.m[x.a].n}一邊`,()=>{baff(x.a,10);baff(x.b,-20);return '樂隊裡劃出了一條看不見的界線。';}],
+    [`站在${S.band.m[x.b].n}一邊`,()=>{baff(x.b,10);baff(x.a,-20);return '樂隊裡劃出了一條看不見的界線。';}],
+    ['勸兩人冷靜',()=>{baff(x.a,-5);baff(x.b,-5);d('happy',-8);return '你夾在中間，兩邊都不討好。';}]]});
+E({id:'band_drug',k:'樂隊',once:1,if:()=>S.band&&S.band.active&&S.debuted,w:1,
+  prep:()=>({c:RI(0,2)}),
+  text:x=>`${S.band.m[x.c].r}${S.band.m[x.c].n}的毒癮越來越嚴重，連續兩場演出都遲到。`,
+  c:x=>{const rep=()=>pick(NAMES[S.region].filter(z=>!S.band.m.some(m=>m.n===z)));return [
+    ['踢走他',()=>{const n=S.band.m[x.c].n;S.band.m[x.c]={n:rep(),aff:45,r:S.band.m[x.c].r};mul('fans',.92);return `${n}離開了。新隊友${S.band.m[x.c].n}技術不錯，但台下有人舉牌要求「還我${n}」。`;}],
+    ['陪他戒毒',()=>{d('happy',-8);mul('fans',.95);if(chance(.6)){baff(x.c,20);return OK('戒毒成功')+'你們暫停了半年演出。他出來的那天，第一件事是抱住你。';}return NG('復吸')+'三個月後，他又開始遲到了。';}],
+    ['不管他',()=>{if(chance(.3)){const n=S.band.m[x.c].n;S.band.m[x.c]={n:rep(),aff:40,r:S.band.m[x.c].r};queueCrisis('隊友離世');logk('隊友'+n+'離世');return NG('悲劇')+`一個月後，${n}被發現倒在家中，再也沒有醒來。`;}return '他勉強撐了下來。';}]];}});
+E({id:'band_split',k:'樂隊',cls:'crisis',once:1,force:1,if:()=>S.band&&S.band.active&&bandAvg()<28,
+  text:()=>`最後一場演出結束後，${S.band.m[0].n}在後台宣布：「我不幹了。」樂隊正式解散。`,
+  c:()=>[['……',()=>{S.flags.soloFans=S.fans;S.band.active=false;mul('fans',.6);scandal('樂隊不和解散',30,true);queueCrisis('樂隊解散');logk('樂隊解散');return '你一個人走出場館。從此以後，你要獨自站在台上。';}]]});
+E({id:'band_royalty',k:'樂隊',once:1,if:()=>S.band&&S.band.active&&tierIdx()>=3,w:3,
+  text:()=>'版稅應該怎樣分？大部分歌都是你寫的，但其他隊員認為應該平分。',
+  c:()=>[['平分',()=>{S.band.m.forEach((m,i)=>baff(i,10));d('money',-Math.max(0,S.money)*.15);return '「我們是一隊樂隊。」大家碰了碰杯。';}],
+    ['按創作比例分',()=>{S.band.m.forEach((m,i)=>baff(i,-12));d('money',50000);return '沒有人反對，但那晚的慶功宴提早散了。';}]]});
+E({id:'rock_guitar',k:'舞台',cd:3,if:()=>S.genre==='rock'&&S.debuted,w:1.4,
+  text:()=>'演出到了高潮，你忍不住想把結他砸爛在台上。',
+  c:()=>[['砸！',()=>{d('money',-5000);d('happy',6);if(chance(.15)){d('health',-10);return NG('割傷了手')+'碎片劃破了你的手，縫了八針。';}boost(1.03);return OK('全場瘋狂')+'碎片飛進了觀眾席，有人把它當寶物收藏。';}],
+    ['向樂迷鞠躬',()=>'你高舉結他，全場歡呼。']]});
+E({id:'rock_party',k:'派對',cd:3,if:()=>S.genre==='rock'&&S.debuted,w:1.5,
+  text:()=>'巡迴期間的派對夜夜笙歌，酒店房間被你們砸得一片狼藉。',
+  c:()=>[['加入狂歡',()=>{d('health',-8);d('happy',10);d('money',-30000);if(S.addiction===0&&chance(.4))S.flags.party=1;return '酒店把你們列入了黑名單。';},'快樂度上升，健康受損'],
+    ['回房休息',()=>{d('happy',-3);return '你戴上耳塞，聽著隔壁的尖叫聲入睡。';}]]});
+E({id:'hearing',k:'健康',once:1,if:()=>S.genre==='rock'&&S.age>=40&&S.debuted,w:1.5,
+  text:()=>'醫生告訴你，多年在巨型喇叭前表演，你的聽力已經永久受損。',
+  c:()=>[['減少演出',()=>{d('talent',-6);mul('fans',.92);d('happy',-6);return '你開始戴著耳機聽自己的歌。';}],
+    ['照樣上台',()=>{d('talent',-10);d('happy',-8);return '「我聽不見，但我感覺得到。」';}]]});
+
+/* --- genre: pop --- */
+E({id:'lipsync',k:'醜聞',once:1,if:()=>S.genre==='pop'&&tierIdx()>=3,w:1,
+  text:()=>'有網民剪輯你多場演出的片段，指你「全程假唱」。',
+  c:()=>[['下一場全程清唱證明自己',()=>{if(S.s.talent>=60){boost(1.12);return OK('證明了實力')+'你清唱了整整兩小時，全場起立鼓掌。';}scandal('清唱走音坐實假唱傳聞',35);return NG('實力不足')+'清唱到第三首，你的聲音明顯撐不住了。';}],
+    ['承認部分預錄',()=>{mul('fans',.94);return '「跳舞的時候真的很難唱。」有人諒解，有人不。';}]]});
+E({id:'diet',k:'公司',cd:4,if:()=>S.genre==='pop'&&S.debuted,w:()=>S.region==='jk'?2:.8,
+  text:()=>'公司要求你在兩個月內減掉十磅，準備拍新的音樂錄像。',
+  c:()=>[['照做',()=>{d('health',-10);d('happy',-10);boost(1.04);return '你每天只吃一隻蘋果。拍攝那天，你在片場暈倒了兩次。';}],
+    ['拒絕',()=>{if(S.manager==='major'||S.manager==='trainee'){mul('fans',.95);return NG('被減少曝光')+'公司把你的鏡頭剪少了一半。';}return '你說：「這是我的身體。」';}]]});
+E({id:'dance',k:'網絡',cd:3,if:()=>S.genre==='pop'&&S.debuted,w:1,
+  text:()=>'新歌的舞蹈挑戰在短片平台瘋傳，全網都在跳你的舞步。',
+  c:()=>[['親自下場挑戰',()=>{boost(1.18);return '你和一位八十歲的婆婆合跳的片段播放量破億。';}],
+    ['讓它自然發酵',()=>{boost(1.1);return '你連自己的歌都聽膩了。';}]]});
+
+/* --- genre: indie --- */
+E({id:'indie_buy',k:'收編',once:1,if:()=>S.genre==='indie'&&S.debuted&&tierIdx()>=2,w:2.5,
+  text:()=>'大型唱片公司想收編你，條件是交出部分創作自主權。',
+  c:()=>[['簽約',()=>{S.manager='major';d('sediment',-10);if(chance(.6)){boost(1.35);return OK('打入主流')+'你的歌第一次登上了電台的熱播榜。';}mul('fans',.85);return NG('老樂迷離開')+'獨立圈的人說你「賣了」。';}],
+    ['堅持獨立',()=>{d('sediment',10);return '你回到那間只容得下五十人的 livehouse。';}]]});
+E({id:'indie_live',k:'巡演',cd:3,if:()=>S.genre==='indie'&&(S.debuted||S.age>=16),w:1.8,
+  text:()=>'你在各地的小型 livehouse 巡演，每晚只有幾十個觀眾。',
+  c:()=>[['堅持唱完全部場次',()=>{d('talent',4);d('sediment',6);d('fans',S.fans*.08+1500);d('happy',-4);return '最後一場，台下有人跟著你唱每一句歌詞。';}],
+    ['中途取消，回家寫歌',()=>{d('crea',6);d('happy',5);return '你在火車上寫完了半張專輯。';}]]});
+
+/* --- genre: country --- */
+E({id:'country_city',k:'機會',once:1,if:()=>S.genre==='country'&&S.home==='us'&&S.age>=16&&S.age<=24,w:3,
+  text:()=>'有人勸你搬到鄉村音樂之都，在那裡的酒吧唱上一年。',
+  c:()=>[['收拾行李出發',()=>{d('talent',6);d('fans',5000);d('money',-3000);return '你在十幾間酒吧唱過歌，認識了一半的唱片監製。';}],
+    ['留在家鄉',()=>{d('rel',6);return '你在教堂的唱詩班唱了一整年。';}]]});
+E({id:'country_cross',k:'轉型',once:1,if:()=>S.genre==='country'&&S.debuted&&tierIdx()>=2,w:2,
+  text:()=>'唱片公司建議你跨界流行曲，脫下牛仔帽。',
+  c:()=>[['跨界流行',()=>{if(chance(.6)){boost(1.35);return OK('跨界成功')+'你的流行專輯打入了主流榜單。';}mul('fans',.85);return NG('兩頭不到岸')+'鄉村樂迷說你背叛，流行樂迷不認識你。';}],
+    ['堅持鄉村',()=>{d('sediment',10);return '你戴回那頂舊牛仔帽。';}]]});
+E({id:'country_niche',k:'異類',cd:5,if:()=>S.genre==='country'&&S.region!=='west',w:2,
+  text:()=>'你在本地唱鄉村音樂，台下觀眾只有十幾人，有人問你是不是在拍廣告。',
+  c:()=>[['繼續唱下去',()=>{d('sediment',10);d('happy',-5);return '你相信總有人聽得懂。';}],
+    ['加入流行元素',()=>{d('fans',S.fans*.1+2000);d('sediment',-3);return '你把班祖琴和電子鼓混在一起，竟然有點新鮮感。';}]]});
+
+/* ============ year flow ============ */
+function startYear(){
+  S.age++;yearSnap={fans:S.fans,money:S.money};
+  if(yearEl)yearEl.classList.add('past');
+  yearEl=document.createElement('section');yearEl.className='year';
+  yearEl.innerHTML=`<div class="yearmark"><span class="n">${S.age}</span><span class="t">歲 · ${esc(tierName(tierIdx()))}</span></div>`;
+  $('#feed').appendChild(yearEl);
+  S.phase='focus';
+  if(S.jail>0){
+    const n=S.flags.jailYear=(S.flags.jailYear||0)+1;
+    S.q.push({k:'獄中',cls:'crisis',text:`獄中第 ${n} 年。鐵窗外的世界照常運轉，樂壇早已有新的名字。`,choices:[
+      ['在獄中寫歌',()=>{d('crea',12);d('sediment',12);d('happy',-4);return jailTick('你在一本練習簿上寫滿了歌詞。');}],
+      ['在獄中反省',()=>{d('happy',10);return jailTick('你讀完了圖書館裡所有的書。');}]]});
+  } else if(S.trainee>0){
+    S.coDebt+=30000;
+    S.q.push({k:'練習生',text:`練習生生涯第 ${S.age-S.ageSigned+1} 年。每月評核，每個星期都有人被淘汰。公司把訓練費、宿舍和伙食全部記在你的賬上，你已欠公司 ${cash(S.coDebt)}。`,choices:[
+      ['加練到凌晨',()=>{d('talent',9);d('health',-5);d('happy',-8);return traineeTick('你的舞步終於跟上了隊形。');}],
+      ['節食減重',()=>{d('talent',4);d('health',-8);d('happy',-8);S.flags.traineeLook=(S.flags.traineeLook||0)+10;return traineeTick('體重計上的數字成了你最在意的東西。');}],
+      ['保持狀態',()=>{d('talent',5);d('happy',3);return traineeTick('你在宿舍的天台上看了很多次日落。');}]]});
+  } else {
+    S.q.push({k:'年度重點',grid:1,text:yearPrompt(),choices:focusOptions()});
+  }
+  next();
+}
+function yearPrompt(){
+  if(!S.debuted)return S.age<=15?'新的一年。你打算把時間花在哪裡？':'你還未出道。今年要怎樣接近夢想？';
+  if(S.s.health<30)return '你的身體在發出警號。今年的重點是？';
+  if(S.s.happy<=30)return '你已經很久沒有真正快樂過了。今年的重點是？';
+  if(S.s.crea<20)return '你已經很久寫不出好歌了。今年的重點是？';
+  return '今年的工作重點是？';
+}
+function jailTick(t){S.jail--;if(S.jail<=0){S.flags.jailYear=0;queueCrisis('身陷囹圄');return t+' 你刑滿出獄，門外只有寥寥幾個記者。';}return t;}
+function traineeTick(t){S.trainee--;if(S.trainee<=0){S.flags.traineeDone=1;
+  const sc=S.s.talent+(S.flags.traineeLook||0)+R(15,55);
+  if(sc>=100){const g=pick(GROUPS);const r=debut();d('fans',60000+S.s.talent*1000);
+    return t+' '+OK('成功出道')+`公司宣布出道名單，你的名字在上面！${S.genre==='pop'||S.genre==='rap'?`你以組合 ${g} ${S.genre==='rap'?'的 rapper':'成員'}身份出道。`:r}`;}
+  S.manager=null;S.signed=false;d('happy',-15);queueCrisis('練習生淘汰');logk('練習生淘汰');
+  const owe=Math.round(S.coDebt*.5);S.coDebt=0;d('money',-owe);
+  return t+' '+NG('落選')+`出道名單上沒有你的名字。你收拾行李，離開了住了幾年的宿舍。公司寄來一封律師信，要求你償還一半訓練費 ${cash(owe)}。`;}
+  return t;}
+
+function buildEvents(){
+  const ok=e=>{if(e.once&&S.seen[e.id]!=null)return false;if(e.cd&&S.seen[e.id]!=null&&S.age-S.seen[e.id]<e.cd)return false;try{return !!e.if();}catch(err){return false;}};
+  const forced=EV.filter(e=>e.force&&ok(e)&&(typeof e.force!=='function'||e.force())).slice(0,2);
+  forced.forEach(e=>{S.seen[e.id]=S.age;S.q.push(evCard(e));});
+  if(S.over)return;
+  const r=rnd();let n;
+  if(!S.debuted&&S.age<15)n=r<.4?0:r<.9?1:2;else n=r<.25?0:r<.7?1:r<.95?2:3;
+  if(S.jail>0)n=0;
+  n=Math.max(0,n-forced.length);
+  let pool=EV.filter(e=>!e.force&&ok(e));
+  for(let i=0;i<n&&pool.length;i++){
+    const rm=S.s.rel<35?2:S.s.rel>=70?.6:1;
+    const ws=pool.map(e=>Math.max(0,(typeof e.w==='function'?e.w():(e.w||1))*(e.trouble?rm:1)));
+    let tot=ws.reduce((a,b)=>a+b,0);if(tot<=0)break;let x=rnd()*tot,j=0;
+    for(;j<pool.length;j++){x-=ws[j];if(x<=0)break;}
+    j=Math.min(j,pool.length-1);
+    const e=pool[j];pool.splice(j,1);S.seen[e.id]=S.age;S.q.push(evCard(e));
+  }
+}
+function evCard(e){const x=e.prep?e.prep():{};return {k:e.k||'事件',cls:e.cls||'',text:e.text(x),choices:e.c(x).filter(Boolean),evId:e.id};}
+
+function endYear(){
+  CURMS=[];const s=S.s;
+  if(S.debuted){
+    S.money+=S.fans*.035*share()*(S.chinaLocked&&S.region==='gc'?.7:1);
+    if(S.coDebt>0&&S.money>0){const rp=Math.round(Math.min(S.coDebt,S.money*.35));S.coDebt-=rp;S.money-=rp;}
+    const ysr=S.age-(S.lastRel==null?S.age:S.lastRel);
+    let dec=ysr>=5?.15:ysr>=3?.06:.01;
+    if(S.att<15)dec+=.12;else if(S.att<30)dec+=.06;
+    if(S.jail)dec+=.12;
+    S.fans=Math.round(S.fans*(1-dec));
+    S.sediment=clamp(S.sediment+2,0,100);
+  }
+  {const over=S.age-ageCap();
+   if(over<=0)S.att=clamp(S.att+RI(3,6),0,100);else S.att=clamp(S.att-(3+Math.floor(over/3)),0,100);
+   if(S.jail)S.att=clamp(S.att-10,0,100);}
+  if(S.age>=18&&!S.jail&&!S.trainee)S.money-=S.debuted?COST[tierIdx()]:(S.age>=22?2000:0);
+  if(S.addiction>0){s.health-=Math.ceil(S.addiction/6);s.happy-=3;S.money-=S.addiction*300*(1+tierIdx());}
+  if(S.age>=35)s.health--;if(S.age>=45)s.health--;if(S.age>=55)s.health-=2;if(S.age>=62)s.health-=2;if(S.age>=70)s.health-=4;
+  if(S.manager==='shark')s.happy-=4;else if(S.manager==='self'&&S.debuted)s.happy-=2;else if(S.manager==='major')s.happy-=1;
+  if(tierIdx()>=5)s.happy-=4;else if(tierIdx()>=4)s.happy-=2;
+  if(s.rel>=70)s.happy+=2;else if(s.rel<30)s.happy-=2;if(S.married)s.happy+=1;
+  if(S.manager==='indie')s.crea+=2;
+  if(s.happy<20){s.health-=7;s.talent-=4;s.crea-=6;}else if(s.happy<40){s.health-=3;s.talent-=2;s.crea-=3;}
+  if(S.age>=50){s.talent-=S.age>=60?3:2;s.crea-=(S.peakTier>=5?6:S.age>=60?3:2);}
+  if(S.flags.smoke){s.health-=2;s.talent-=1;s.happy+=1;}
+  if(S.money<0)s.happy-=S.money<-100000?14:10;
+  s.rel-=2;
+  S.lowH=s.happy<40?S.lowH+1:0;
+  S.vlowH=s.happy<5?(S.vlowH||0)+1:0;
+  s.crea+=3;if(S.age<35)s.health+=1;
+  STATK.forEach(k=>s[k]=clamp(Math.round(s[k]),0,100));
+  if(S.band&&S.band.active)S.band.m.forEach((m,i)=>baff(i,RI(-4,1)));
+  S.money=Math.round(S.money);
+  checkMilestones();
+  const df=S.fans-yearSnap.fans,dm=S.money-yearSnap.money;
+  const p=document.createElement('p');p.className='yearend';
+  p.innerHTML=`年終結算：粉絲 ${fmt(S.fans)}（${df>=0?'+':''}${fmt(df)}）· 金錢 ${cash(S.money)}（${dm>=0?'+':''}${fmt(dm)}）`+CURMS.map(m=>`<div class="ms">${esc(m)}</div>`).join('');
+  yearEl.appendChild(p);CURMS=null;
+  if((s.health<=0||S.age>=95)&&!S.over)healthDeath();
+  if(!S.over&&S.debuted&&S.att<=0&&S.age>=18)finish('fade',S.flags.plasticFail?FADE_PLASTIC:pick(FADE));
+  updateHUD();
+}
+
+function next(){
+  if(S.over)return showEnd();
+  if(S.phase==='birth'){S.phase='';return startYear();}
+  if(S.q.length){showCard(S.q.shift());return;}
+  if(S.phase==='focus'){S.phase='events';buildEvents();if(S.over)return showEnd();
+    if(S.q.length)return next();
+    const p=document.createElement('p');p.className='quiet';p.textContent=pick(['這一年平靜地過去了。','日子一天天過去，沒有甚麼特別的事。','這一年，你過得很平淡。','一整年都沒有大事發生。']);yearEl.appendChild(p);}
+  endYear();
+  if(S.over)return showEnd();
+  startYear();
+}
+
+/* ============ UI ============ */
+const $=(q,el=document)=>el.querySelector(q);
+const app=$('#app');
+function chips(df){
+  const ks=Object.keys(df||{}).filter(k=>LABEL[k]);if(!ks.length)return '';
+  return '<div class="chips">'+ks.map(k=>{const v=df[k];const bad=k==='addiction'?v>0:v<0;
+    const val=k==='money'?(v>0?'+':'-')+cash(Math.abs(v)).replace('US$','$'):k==='fans'?(v>0?'+':'')+fmt(v):(v>0?'+':'')+v;
+    return `<span class="chip ${bad?'dn':'up'}">${LABEL[k]} ${val}</span>`;}).join('')+'</div>';
+}
+function showCard(card){
+  const el=document.createElement('article');el.className='card '+(card.cls||'');
+  el.innerHTML=`<div class="kicker">${esc(card.k)}</div><p class="body">${card.text}</p><div class="choices${card.grid?' grid':''}"></div>`;
+  const box=$('.choices',el);
+  card.choices.forEach(([t,fn,sub,hidden])=>{const b=document.createElement('button');b.className='choice'+(hidden?' hidden':'');
+    b.innerHTML=`<span class="ct">${esc(t)}</span>${sub?`<span class="cs">${esc(sub)}</span>`:''}`;
+    b.onclick=()=>resolve(el,t,fn);box.appendChild(b);});
+  yearEl.appendChild(el);
+  updateHUD();
+  requestAnimationFrame(()=>el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'}));
+}
+function resolve(el,t,fn){
+  DIFF={};CURMS=[];
+  let res='';try{res=fn()||'';}catch(e){console.error(e);res='';}
+  if(S&&!S.over&&S.s.health<=0){healthDeath();res+=' '+NG('倒下')+'你的身體終於撐不住了。';}
+  checkMilestones();
+  const df=DIFF,m=CURMS;DIFF=null;CURMS=null;
+  $('.choices',el).remove();
+  el.insertAdjacentHTML('beforeend',`<div class="result"><div class="picked">› ${esc(t)}</div>${res?`<p>${res}</p>`:''}${chips(df)}${m.map(x=>`<div class="ms">${esc(x)}</div>`).join('')}</div>`);
+  updateHUD();next();
+}
+function meter(k,v){const warn=k==='happy'?v<40:k==='att'?v<25:v<25;return `<div class="m${warn?' low':''}"><span class="ml">${LABEL[k]}</span><span class="mv">${v}</span><span class="bar"><i style="width:${v}%"></i></span></div>`;}
+function updateHUD(){
+  const h=$('#hud');if(!h||!S)return;const s=S.s;
+  const tags=[];
+  tags.push(S.manager?MGR[S.manager].name:(S.debuted?'自己管理':'未簽約'));
+  if(S.trainee>0)tags.push('練習生');
+  tags.push('市場：'+S.markets.filter(m=>!(m==='cn'&&S.chinaLocked)).map(m=>MARKETS[m].n).join('、'));
+  if(S.love)tags.push('戀人：'+S.love+(S.married?'（已婚）':''));
+  if(S.band)tags.push(S.band.active?'樂隊默契 '+Math.round(bandAvg()):'已離開樂隊');
+  if(S.bro)tags.push(`兄弟${S.bro.n} ${S.bro.t}`);
+  if(S.oldImage>20)tags.push('童星形象 '+S.oldImage);
+  const warn=[];if(S.coDebt>0)warn.push('欠公司 '+cash(S.coDebt));if(S.flags.disgraced)warn.push('失德藝人');if(S.chinaLocked)warn.push('遭十二億市場封殺');if(S.addiction>0)warn.push('成癮 '+S.addiction);if(S.jail>0)warn.push('服刑中');if(S.sink>0)warn.push('低潮 ×'+S.sink);
+  h.innerHTML=`<div class="hud-top"><div class="who"><div class="nm">${esc(S.name)} <span class="sex">${S.gender==='f'?'♀ 女':'♂ 男'}</span></div>
+    <div class="meta">${HOMES[S.home].n} · ${GENRES[S.genre].name} · ${FAMILIES[S.family].name}</div>
+    <span class="tier">${tierName(tierIdx())}</span></div>
+    <div class="agebox"><div class="age">${Math.max(S.age,12)}<small>歲</small></div><button class="restart" id="rs">重新開局</button></div></div>
+    <div class="confirm" id="rsc" hidden><span>放棄這一生，重新開始？</span><button class="cbtn" id="rsy">確定</button><button class="cbtn ghost" id="rsn">取消</button></div>
+    <div class="nums"><div>粉絲人數<b>${fmt(S.fans)}</b></div><div class="${S.att<25?'attlow':''}">關注度<b>${S.att}</b><small>/100</small></div><div>金錢<b>${cash(S.money)}</b></div></div>
+    <div class="meters">${STATK.map(k=>meter(k,s[k])).join('')}</div>
+    <div class="tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${warn.map(t=>`<span class="tag warn">${esc(t)}</span>`).join('')}</div>`;
+  $('#rs').onclick=()=>{$('#rsc').hidden=!$('#rsc').hidden;};
+  $('#rsy').onclick=()=>showSetup();
+  $('#rsn').onclick=()=>{$('#rsc').hidden=true;};
+}
+
+/* --- screens --- */
+function showTitle(){
+  window.scrollTo(0,0);
+  app.innerHTML=`<div class="hero"><div class="eyebrow">STARDOM · 12 → ∞</div>
+  <h1>星途<span>人生</span></h1>
+  <p>你在十二歲那年第一次拿起咪高峰。出身和喜歡的音樂由命運抽籤；經理人、愛情、誘惑和每一次跌倒，都由你自己選擇。</p>
+  <p>每回合一年。健康歸零，或者世界對你的關注降到零，這一生便告完結。有人一夜爆紅，有人大器晚成，也有人永遠停在二十七歲。</p>
+  <div class="ladder">${TIERS.map((t,i)=>`<span>${i===5?'天王天后':t[1]}</span>`).join('')}</div>
+  <div><button class="btn" id="go">開始</button></div>
+  <p class="note">遊戲涉及毒品、坐牢、暴力與死亡等題材，建議十五歲以上人士遊玩。所有角色均屬虛構。</p></div>`;
+  $('#go').onclick=showSetup;
+}
+let pickR='gc',pickS='m';
+function showSetup(){
+  window.scrollTo(0,0);yearEl=null;
+  const sugg=pick(['阿星','Kit','小雨','JAY C','莫凡','Luna','阿樂','Echo']);
+  app.innerHTML=`<div class="setup"><h2>建立你的角色</h2>
+  <div class="field"><label for="nm">藝名</label><input id="nm" maxlength="12" value="${sugg}"></div>
+  <div class="field"><span class="lbl">性別</span><div class="opts" id="so">
+    <button class="opt" data-k="m" aria-pressed="${pickS==='m'}"><b>男</b><small>四十多歲前關注度每年上升，之後逐年下降。韓國和台灣男生要服兵役。</small></button>
+    <button class="opt" data-k="f" aria-pressed="${pickS==='f'}"><b>女</b><small>樂壇對女歌手的年齡更苛刻：三十多歲後關注度便開始下降，東亞地區更早。</small></button></div></div>
+  <div class="field"><span class="lbl">出生地區</span><div class="opts three" id="ro">${Object.entries(REGIONS).map(([k,r])=>`<button class="opt" data-k="${k}" aria-pressed="${k===pickR}"><b>${r.name}</b><small>${r.desc}</small></button>`).join('')}</div></div>
+  <div><button class="btn" id="born">出生</button></div>
+  <p class="note">家庭背景和你喜歡的音樂類型（流行曲、說唱、搖滾樂隊、獨立音樂、鄉村音樂）會在出生時隨機抽出。</p></div>`;
+  const bind=(id,set)=>$('#'+id).querySelectorAll('.opt').forEach(b=>b.onclick=()=>{$('#'+id).querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');set(b.dataset.k);});
+  bind('ro',k=>pickR=k);bind('so',k=>pickS=k);
+  $('#born').onclick=()=>{const n=($('#nm').value||'').trim()||sugg;startGame(n,pickS,pickR);};
+}
+function startGame(name,g,r){
+  newState(name,g,r);yearEl=null;
+  window.scrollTo(0,0);
+  app.innerHTML=`<header class="hud" id="hud"></header><main class="feed" id="feed"></main>`;
+  yearEl=document.createElement('section');yearEl.className='year';
+  yearEl.innerHTML=`<div class="yearmark"><span class="n">出生</span><span class="t">${esc(FAMILIES[S.family].name)}</span></div>`;
+  $('#feed').appendChild(yearEl);
+  let extra='';
+  if(S.band)extra=` 你和${S.band.m.map(m=>m.r+m.n).join('、')}是從小一起玩音樂的朋友，夢想是組一隊搖滾樂隊。`;
+  if(S.bro)extra=` 舊區裡，${S.bro.n}是你最好的兄弟。`;
+  updateHUD();S.phase='birth';
+  showCard({k:'命運抽籤',text:`你是一個在<b>${HOMES[S.home].n}</b>出生的${S.gender==='f'?'女孩':'男孩'}，家庭背景是<b>${FAMILIES[S.family].name}</b>。${FAMILIES[S.family].desc}${extra}<br>十二歲那年，你第一次被<b>${GENRES[S.genre].name}</b>打動。${GENRES[S.genre].desc}`,
+    choices:[['開始人生',()=>''],['重新抽籤',()=>{startGame(name,g,r);return '';},'重抽家庭背景和音樂類型']]});
+}
+
+/* --- ending --- */
+const EPI={
+  '英年早逝':['燃燒得太快的星，也曾照亮過夜空。','他們說天才都走得早。你寧願自己不是天才。'],
+  '27歲俱樂部':['永遠二十七歲。','歌還在播，人已經不在了。'],
+  '傳奇巨星':['你的歌，會比你活得更久。','世界記得你的名字。'],
+  '殿堂級長青':['每個年代，都有人唱你的歌。','時間帶走了很多人，帶不走你。'],
+  '大器晚成':['遲到的掌聲，也是掌聲。','你等了很久，世界終於追上了你。'],
+  '一曲歌手':['一首歌，就是一生。','所有人都會唱那首歌，卻沒有人記得你的名字。'],
+  '一線實力派':['不是最紅的那一個，卻是最真的那一個。'],
+  '地下傳說':['知道你的人不多，但他們永遠不會忘記。'],
+  '半紅不黑':['總有人記得你的某一首歌，只是想不起你的名字。','不上不下的一生，也是唱足了一生。'],
+  '過氣天王':['站過最高的地方，也看過最長的日落。'],
+  '過氣天后':['站過最高的地方，也看過最長的日落。'],
+  '被世界遺忘':['曾經，你也是別人的偶像。','掌聲停了，歌還在你心裡。'],
+  '默默無聞':['這裡安息著一個唱過歌的人。'],
+  '幕後推手':['台前的光，有一半是你點亮的。'],
+  '回家繼承家業':['那支結他，一直掛在辦公室的牆上。'],
+  '平凡人生':['夢想沒有實現，但你曾經很認真地做過夢。'],
+  '未完的夢':['那首歌，始終沒有機會唱給世界聽。'],
+  '光榮引退':['在最好的時候離開，也是一種勇氣。']
+};
+function careerTitle(){
+  const pt=S.peakTier,hits=S.releases.filter(r=>r.q>=80).length;
+  if(!S.debuted)return '未完的夢';
+  if(pt>=6)return '傳奇巨星';
+  if(pt>=5&&tierIdx()>=4)return '殿堂級長青';
+  if(S.lateBloom&&pt>=4)return '大器晚成';
+  if(hits===1&&pt>=3)return '一曲歌手';
+  if(pt>=4)return '一線實力派';
+  if(S.sediment>=80)return '地下傳說';
+  if(pt>=3)return '半紅不黑';
+  return '默默無聞';
+}
+function computeEnding(){
+  const o=S.over,pt=S.peakTier;
+  if(o.type==='death'){if(S.age===27){ach('27歲俱樂部');return '27歲俱樂部';}if(S.age<45)return '英年早逝';return careerTitle();}
+  if(o.type==='heir')return '回家繼承家業';
+  if(o.type==='ordinary')return '平凡人生';
+  if(o.type==='backstage')return '幕後推手';
+  if(o.type==='fade'){if(pt>=6)return '傳奇巨星';if(pt>=5)return S.gender==='f'?'過氣天后':'過氣天王';if(pt<=2&&S.sediment<80)return '被世界遺忘';return careerTitle();}
+  if(o.type==='retire'){const t=careerTitle();return tierIdx()>=4?'光榮引退':t;}
+  return careerTitle();
+}
+function showEnd(){
+  CURMS=null;
+  const title=computeEnding(),pt=S.peakTier;
+  if(S.chinaLocked&&pt>=5)ach('十二億之外');
+  if(S.bro&&S.bro.t>=70&&pt>=4)ach('兄弟情深');
+  if(S.age>=65&&S.debuted&&S.fans>=1e6&&S.over.type!=='fade')ach('不老傳說');
+  if(S.flags.soloFans&&S.peakFans>=S.flags.soloFans*2&&pt>=4)ach('單飛成神');
+  if(S.family==='child'&&S.oldImage<=20&&pt>=4)ach('擺脫童星');
+  if(!S.worst&&pt>=4)ach('完美偶像');
+  const best=[...S.releases].sort((a,b)=>b.q-a.q||b.sales-a.sales)[0];
+  const o=S.over;
+  const sub=o.type==='death'?o.text:o.type==='fade'?o.text+` ${S.age}歲，世界對你的關注降到了零。`:o.type==='retire'?`${S.age}歲，你宣布退出樂壇。`:o.type==='backstage'?`${S.age}歲，你轉到幕後，成為無數新人背後的推手。`:o.type==='heir'?`${S.age}歲，你放下咪高峰，回家繼承家業。`:`${S.age}歲，你放下了音樂。`;
+  const epi=pick(EPI[title]||['星途已盡。']);
+  const drugRelated=o.cause==='drug'||S.drugUses>0;
+  const tl=[...S.log,...S.milestones.map(m=>({age:m.age,t:m.t}))].sort((a,b)=>a.age-b.age);
+  const seenT=new Set();const tlu=tl.filter(x=>{const k=x.age+x.t;if(seenT.has(k))return false;seenT.add(k);return true;}).slice(0,26);
+  window.scrollTo(0,0);
+  app.innerHTML=`<div class="endcard"><div class="endhead"><div class="eyebrow">STARDOM · 12 → ${S.age}</div>
+    <h2>${esc(title)}</h2><div class="sub">${esc(S.name)} · ${S.gender==='f'?'女':'男'} · ${HOMES[S.home].n} · ${GENRES[S.genre].name} · ${FAMILIES[S.family].name}出身</div></div>
+    <div class="endbody"><p>${esc(sub)}</p><p class="epi">${esc(epi)}</p>
+    ${S.flags.disgraced?'<p class="help">你在樂壇的名字旁邊，永遠標註著「失德藝人」。</p>':''}
+    <dl class="stats">
+      <div><dt>代表作</dt><dd class="txt">${best?`《${esc(best.title)}》<br><span class="note">${best.age}歲 · 評分 ${best.q} · ${fmt(best.sales)} 張</span>`:'沒有發表專輯'}</dd></div>
+      <div><dt>最高級別</dt><dd class="txt">${tierName(pt)}</dd></div>
+      <div><dt>最高粉絲數</dt><dd>${fmt(S.peakFans)}</dd></div>
+      <div><dt>累積銷量</dt><dd>${fmt(S.totalSales)}</dd></div>
+      <div><dt>發表專輯</dt><dd>${S.releases.length}</dd></div>
+      <div><dt>年度大獎</dt><dd>${S.awards}</dd></div>
+      <div><dt>最終財產</dt><dd>${cash(S.money)}</dd></div>
+      <div><dt>最大醜聞</dt><dd class="txt">${S.worst?esc(S.worst.t)+`<br><span class="note">${S.worst.age}歲</span>`:'一生清白'}</dd></div>
+    </dl>
+    ${S.ach.length?`<div class="sect"><h3>成就</h3><div class="achs">${S.ach.map(a=>`<span class="ach">${esc(a)}</span>`).join('')}</div></div>`:''}
+    ${tlu.length?`<div class="sect"><h3>一生大事</h3><ul class="tl">${tlu.map(x=>`<li><span>${x.age}</span>${esc(x.t)}</li>`).join('')}</ul></div>`:''}
+    ${drugRelated?`<p class="help">現實中，藥物問題是可以求助的。香港禁毒處查詢熱線：186 186；其他地區請聯絡當地的戒毒或醫療服務。</p>`:''}
+    <div class="endbtns"><button class="btn" id="again">再活一次</button><button class="btn ghost" id="copy">複製結果</button></div>
+    <p class="note" id="copied" hidden>已複製，可以貼到社交媒體了。</p>
+    </div></div>`;
+  $('#again').onclick=showSetup;
+  const shareTxt=`《星途人生》\n${S.name}｜${S.gender==='f'?'女':'男'}｜${HOMES[S.home].n}｜${GENRES[S.genre].name}\n${FAMILIES[S.family].name}出身，星途：12 → ${S.age}歲\n結局：${title}\n${best?`代表作：《${best.title}》（評分 ${best.q}）\n`:''}最高粉絲：${fmt(S.peakFans)}｜累積銷量：${fmt(S.totalSales)}\n${S.ach.length?'成就：'+S.ach.join('、')+'\n':''}「${epi}」`;
+  $('#copy').onclick=()=>{const done=()=>{$('#copied').hidden=false;};
+    try{navigator.clipboard.writeText(shareTxt).then(done,()=>fallbackCopy(shareTxt,done));}catch(e){fallbackCopy(shareTxt,done);}};
+}
+function fallbackCopy(t,done){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){}ta.remove();}
+
+showTitle();
+</script>
+
+</body>
+</html>
